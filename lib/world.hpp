@@ -101,22 +101,23 @@ class Object
 
 class HostMotionState 
 {
-    double velocity[2], acceleration[2], yaw_rate;
+    public:
+        double velocity[2], acceleration[2], yaw_rate;
 };
 
-class HostMeasuredState : HostMotionState
+class HostMeasuredState : public HostMotionState
 {
     public:
         double error[2];
 };
 
-class HostEstimateState : HostMotionState
+class HostEstimateState : public HostMotionState
 {
     public:
         double position[2], gain[2], error[2];
 };
 
-class HostPredictionState : HostMotionState
+class HostPredictionState : public HostMotionState
 {
     public:
         double position[2], error[2];
@@ -131,13 +132,28 @@ class HostObject
 
         void update (HostMeasuredState sensor_data)
         {
-            
+            for (int i = 0; i < 2; i++) {
+                estimate.gain[i] = prediction.error[i] / (prediction.error[i] + measurement.error[i]);
+                estimate.error[i] = (1 - estimate.gain[i]) * prediction.error[i];
+            }
+
+            for (int axis = 0; axis < 3; axis++) {
+                //estimate.position[axis] = prediction.position[axis] + estimate.gain[0] * (measurement.position[axis] - prediction.position[axis]);
+                estimate.velocity[axis] = prediction.velocity[axis] + estimate.gain[1] * (measurement.velocity[axis] - prediction.velocity[axis]);
+                estimate.acceleration[axis] = prediction.acceleration[axis] + estimate.gain[2] * (measurement.acceleration[axis] - prediction.acceleration[axis]);
+            }
+        }
+
+        void predict ()
+        {
+
         }
 };
 
 class TickData
 {
     public:
+        bool is_host_updated;
         HostMeasuredState host_state;
         std::vector<MeasuredState> object_states;
         double timestamp;
@@ -205,12 +221,22 @@ class World
                 }
             }
 
-
         }
 
         void tick (const TickData &data)
         {
-            host.update(data.host_state);
+            if (data.is_host_updated) {
+                host.update(data.host_state);
+            }
+
             update_objects(data.object_states, data.timestamp);
+
+            host.predict();
+            double process_noise[3] = {1, 1, 1};
+            for (auto &object : objects) {
+                object.predict(data.timestamp - last_timestamp, process_noise);
+            }
+
+            last_timestamp = data.timestamp;
         }
 };
