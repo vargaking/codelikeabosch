@@ -3,11 +3,6 @@
 
 namespace py = pybind11;
 
-std::string test ()
-{
-    return "Hello World!";
-}
-
 PYBIND11_MODULE(lib, handle) {
     handle.def("test", &test);
 }
