@@ -7,8 +7,8 @@ ifeq ($(uname),Darwin)
 endif
 ifeq ($(uname),Linux)
 	# linux specific code
-	PYTHON := python
-	PYTHON_CONFIG := python-config
+	PYTHON := python3
+	PYTHON_CONFIG := python3-config
 endif
 
 CXXFLAGS := --std=c++20 -O3 -Wno-write-strings -I$(shell pwd)/include -I$(shell pwd)/include/pybind11/include $(shell $(PYTHON_CONFIG) --includes 2> /dev/null || ~$(PYTHON_CONFIG) --includes)
