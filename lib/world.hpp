@@ -56,11 +56,14 @@ class Object
         Object (World &world_, MeasuredState initial_state)
             : world(world_)
         {
+            for (int i = 0; i < 3; i++) {
+                estimate.error[i] = measurement.error[i];
+            }
+
             for (int axis = 0; axis < 3; axis++) {
                 estimate.position[axis] = initial_state.position[axis];
                 estimate.velocity[axis] = initial_state.velocity[axis];
                 estimate.acceleration[axis] = initial_state.acceleration[axis];
-                estimate.error[axis] = measurement.error[axis];
             }
         }
 
@@ -70,35 +73,30 @@ class Object
                 type = measurement.type;
             }
 
-            
+            for (int i = 0; i < 3; i++) {
+                estimate.gain[i] = prediction.error[i] / (prediction.error[i] + measurement.error[i]);
+                estimate.error[i] = (1 - estimate.gain[i]) * prediction.error[i];
+            }
 
             for (int axis = 0; axis < 3; axis++) {
-                estimate.gain[axis] = prediction.error[axis] / (prediction.error[axis] + measurement.error[axis]);
-                estimate.error[axis] = (1 - estimate.gain[axis]) * prediction.error[axis];
-                estimate.position[axis] = prediction.position[axis] + estimate.gain[axis] * (measurement.position[axis] - prediction.position[axis]);
-                estimate.velocity[axis] = prediction.velocity[axis] + estimate.gain[axis] * (measurement.velocity[axis] - prediction.velocity[axis]);
-                estimate.acceleration[axis] = prediction.acceleration[axis] + estimate.gain[axis] * (measurement.acceleration[axis] - prediction.acceleration[axis]);
+                estimate.position[axis] = prediction.position[axis] + estimate.gain[0] * (measurement.position[axis] - prediction.position[axis]);
+                estimate.velocity[axis] = prediction.velocity[axis] + estimate.gain[1] * (measurement.velocity[axis] - prediction.velocity[axis]);
+                estimate.acceleration[axis] = prediction.acceleration[axis] + estimate.gain[2] * (measurement.acceleration[axis] - prediction.acceleration[axis]);
             }
         }
 
         void predict (double dt, double process_noise[3])
         {
+            for (int i = 0; i < 3; i++) {
+                prediction.error[i] = estimate.error[i] + process_noise[i];
+            }
+
             for (int axis = 0; axis < 3; axis++) {
                 prediction.acceleration[axis] = estimate.acceleration[axis];
                 prediction.velocity[axis] = estimate.velocity[axis] + (estimate.acceleration[axis] * dt);
                 prediction.position[axis] = estimate.position[axis] + (estimate.velocity[axis] * dt) + (0.5 * estimate.acceleration[axis] * std::pow(dt, 2));
-
-                prediction.error[axis] = estimate.error[axis] + process_noise[axis];
             }
         }
-};
-
-class TickData
-{
-    public:
-        MeasuredState host_state;
-        std::vector<MeasuredState> object_states;
-        double timestamp;
 };
 
 class HostMotionState 
@@ -115,13 +113,13 @@ class HostMeasuredState : HostMotionState
 class HostEstimateState : HostMotionState
 {
     public:
-        double gain[2], error[2];
+        double position[2], gain[2], error[2];
 };
 
 class HostPredictionState : HostMotionState
 {
     public:
-        double error[2];
+        double position[2], error[2];
 };
 
 class HostObject
@@ -131,11 +129,19 @@ class HostObject
         HostEstimateState estimate;
         HostPredictionState prediction;
 
-        void update ()
+        void update (HostMeasuredState sensor_data)
         {
             
         }
-}
+};
+
+class TickData
+{
+    public:
+        HostMeasuredState host_state;
+        std::vector<MeasuredState> object_states;
+        double timestamp;
+};
 
 class World 
 {
@@ -204,7 +210,7 @@ class World
 
         void tick (const TickData &data)
         {
-            host.update(data.);
+            host.update(data.host_state);
             update_objects(data.object_states, data.timestamp);
         }
 };
