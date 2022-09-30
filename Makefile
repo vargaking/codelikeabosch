@@ -46,7 +46,7 @@ install:
 .PHONY: build
 build:
 	@if ~$(PYTHON_CONFIG) --includes 1>/dev/null 2>/dev/null || $(PYTHON_CONFIG) --includes 1>/dev/null 2>/dev/null; then \
-		cd back_end && $(MAKE); \
+		cd lib && $(MAKE); \
 	else \
 		echo "Please install the python-dev or python3-dev packages before proceeding."; \
 		echo "On MacOS installing Python 3 through Homebrew should work out of the box."; \
@@ -56,4 +56,8 @@ build:
 
 .PHONY: clean
 clean:
-	cd back_end && $(MAKE) clean
+	cd lib && $(MAKE) clean
+
+.PHONY: run
+run: install build
+	flask --app app run
