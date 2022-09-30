@@ -58,10 +58,17 @@ public:
     {
         for (int axis = 0; axis < 3; axis++)
         {
-            estimate.position[axis] = initial_state.position[axis];
-            estimate.velocity[axis] = initial_state.velocity[axis];
-            estimate.acceleration[axis] = initial_state.acceleration[axis];
-            estimate.error[axis] = measurement.error[axis];
+            for (int i = 0; i < 3; i++)
+            {
+                estimate.error[i] = measurement.error[i];
+            }
+
+            for (int axis = 0; axis < 3; axis++)
+            {
+                estimate.position[axis] = initial_state.position[axis];
+                estimate.velocity[axis] = initial_state.velocity[axis];
+                estimate.acceleration[axis] = initial_state.acceleration[axis];
+            }
         }
     }
 
@@ -72,59 +79,69 @@ public:
             type = measurement.type;
         }
 
+        for (int i = 0; i < 3; i++)
+        {
+            estimate.gain[i] = prediction.error[i] / (prediction.error[i] + measurement.error[i]);
+            estimate.error[i] = (1 - estimate.gain[i]) * prediction.error[i];
+        }
+
         for (int axis = 0; axis < 3; axis++)
         {
-            estimate.gain[axis] = prediction.error[axis] / (prediction.error[axis] + measurement.error[axis]);
-            estimate.error[axis] = (1 - estimate.gain[axis]) * prediction.error[axis];
-            estimate.position[axis] = prediction.position[axis] + estimate.gain[axis] * (measurement.position[axis] - prediction.position[axis]);
-            estimate.velocity[axis] = prediction.velocity[axis] + estimate.gain[axis] * (measurement.velocity[axis] - prediction.velocity[axis]);
-            estimate.acceleration[axis] = prediction.acceleration[axis] + estimate.gain[axis] * (measurement.acceleration[axis] - prediction.acceleration[axis]);
+            estimate.position[axis] = prediction.position[axis] + estimate.gain[0] * (measurement.position[axis] - prediction.position[axis]);
+            estimate.velocity[axis] = prediction.velocity[axis] + estimate.gain[1] * (measurement.velocity[axis] - prediction.velocity[axis]);
+            estimate.acceleration[axis] = prediction.acceleration[axis] + estimate.gain[2] * (measurement.acceleration[axis] - prediction.acceleration[axis]);
         }
     }
+}
 
-    void predict(double dt, double process_noise[3])
+void
+predict(double dt, double process_noise[3])
+{
+    for (int axis = 0; axis < 3; axis++)
     {
+        for (int i = 0; i < 3; i++)
+        {
+            prediction.error[i] = estimate.error[i] + process_noise[i];
+        }
+
         for (int axis = 0; axis < 3; axis++)
         {
             prediction.acceleration[axis] = estimate.acceleration[axis];
             prediction.velocity[axis] = estimate.velocity[axis] + (estimate.acceleration[axis] * dt);
             prediction.position[axis] = estimate.position[axis] + (estimate.velocity[axis] * dt) + (0.5 * estimate.acceleration[axis] * std::pow(dt, 2));
-
-            prediction.error[axis] = estimate.error[axis] + process_noise[axis];
         }
+>>>>>>> 6b81d130dfd31eb25142b6e158174ddfa75c8445
     }
-};
-
-class TickData
-{
-public:
-    bool is_host_updated;
-    MeasuredState host_state;
-    std::vector<MeasuredState> object_states;
-    double timestamp;
-};
+}
+}
+;
 
 class HostMotionState
 {
+public:
     double velocity[2], acceleration[2], yaw_rate;
 };
 
-class HostMeasuredState : HostMotionState
+class HostMeasuredState : public HostMotionState
 {
 public:
     double error[2];
 };
 
-class HostEstimateState : HostMotionState
+class HostEstimateState : public HostMotionState
 {
+
 public:
-    double gain[2], error[2];
+    double position[2], gain[2], error[2];
+>>>>>>> 6b81d130dfd31eb25142b6e158174ddfa75c8445
 };
 
-class HostPredictionState : HostMotionState
+class HostPredictionState : public HostMotionState
 {
+
 public:
-    double error[2];
+    double position[2], error[2];
+>>>>>>> 6b81d130dfd31eb25142b6e158174ddfa75c8445
 };
 
 class HostObject
@@ -134,10 +151,36 @@ public:
     HostEstimateState estimate;
     HostPredictionState prediction;
 
-    void update()
+    void update(HostMeasuredState sensor_data)
+    {
+        for (int i = 0; i < 2; i++)
+        {
+            estimate.gain[i] = prediction.error[i] / (prediction.error[i] + measurement.error[i]);
+            estimate.error[i] = (1 - estimate.gain[i]) * prediction.error[i];
+        }
+
+        for (int axis = 0; axis < 3; axis++)
+        {
+            // estimate.position[axis] = prediction.position[axis] + estimate.gain[0] * (measurement.position[axis] - prediction.position[axis]);
+            estimate.velocity[axis] = prediction.velocity[axis] + estimate.gain[1] * (measurement.velocity[axis] - prediction.velocity[axis]);
+            estimate.acceleration[axis] = prediction.acceleration[axis] + estimate.gain[2] * (measurement.acceleration[axis] - prediction.acceleration[axis]);
+        }
+    }
+
+    void predict()
     {
     }
-}
+};
+
+class TickData
+{
+public:
+    bool is_host_updated;
+    HostMeasuredState host_state;
+    std::vector<MeasuredState> object_states;
+    double timestamp;
+};
+>>>>>>> 6b81d130dfd31eb25142b6e158174ddfa75c8445
 
 class World
 {
@@ -202,16 +245,31 @@ public:
                     u = INFINITE_ERROR;
                 }
             }
-
-            objects[i].update();
         }
 
         for (int i = 0; i < sensor_data.size(); i++)
         {
+
             if (!data_has_match[i])
             {
                 objects.push_back(Object(*this, sensor_data[i]));
             }
+
+            if (data.is_host_updated)
+            {
+                host.update(data.host_state);
+            }
+
+            update_objects(data.object_states, data.timestamp);
+
+            host.predict();
+            double process_noise[3] = {1, 1, 1};
+            for (auto &object : objects)
+            {
+                object.predict(data.timestamp - last_timestamp, process_noise);
+            }
+
+            last_timestamp = data.timestamp;
         }
     }
 
