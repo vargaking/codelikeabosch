@@ -59,5 +59,5 @@ clean:
 	cd lib && $(MAKE) clean
 
 .PHONY: run
-run: install build
-	flask --app app run
+run: build
+	flask --app app run --debugger --reload
