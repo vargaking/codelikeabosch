@@ -27,7 +27,6 @@ def testing():
 
         fileValues.append(longvalues)
 
-    # return filevalues in html
     return str(fileValues)
 
 
