@@ -14,9 +14,8 @@ std::string testing()
 {
     TickData tickData;
     tickData.is_host_updated = false;
-    tickData.host_state = MeasuredState();
-    tickData.host_state.type = ObjectType::car;
-    for (int i = 0; i < 3; i++)
+    tickData.host_state = HostMeasuredState();
+    for (int i = 0; i < 2; i++)
     {
         tickData.host_state.error[i] = 0;
     }
@@ -28,7 +27,6 @@ std::string testing()
         object_states[0].error[i] = 0;
     }
     tickData.object_states = object_states;
-    tickData.timestamp = 1231.124;
     return std::to_string(tickData.timestamp);
 }
 

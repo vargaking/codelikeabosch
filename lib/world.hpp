@@ -110,11 +110,8 @@ predict(double dt, double process_noise[3])
             prediction.velocity[axis] = estimate.velocity[axis] + (estimate.acceleration[axis] * dt);
             prediction.position[axis] = estimate.position[axis] + (estimate.velocity[axis] * dt) + (0.5 * estimate.acceleration[axis] * std::pow(dt, 2));
         }
->>>>>>> 6b81d130dfd31eb25142b6e158174ddfa75c8445
     }
 }
-}
-;
 
 class HostMotionState
 {
@@ -132,8 +129,10 @@ class HostEstimateState : public HostMotionState
 {
 
 public:
+    double gain[2], error[2];
+
+public:
     double position[2], gain[2], error[2];
->>>>>>> 6b81d130dfd31eb25142b6e158174ddfa75c8445
 };
 
 class HostPredictionState : public HostMotionState
@@ -141,7 +140,6 @@ class HostPredictionState : public HostMotionState
 
 public:
     double position[2], error[2];
->>>>>>> 6b81d130dfd31eb25142b6e158174ddfa75c8445
 };
 
 class HostObject
@@ -180,7 +178,6 @@ public:
     std::vector<MeasuredState> object_states;
     double timestamp;
 };
->>>>>>> 6b81d130dfd31eb25142b6e158174ddfa75c8445
 
 class World
 {
