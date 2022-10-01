@@ -105,12 +105,8 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
                         state.velocity[0] = values[3][lastitem2][313 + t + y] / 256.0;
                         state.velocity[1] = values[3][lastitem2][354 + t + y] / 256.0;
                         state.velocity[2] = values[3][lastitem2][395 + t + y] / 256.0;
-<<<<<<< HEAD
                         if (state.position[0] != 0 || state.position[0] != 0)
                         {
-=======
-                        if (state.position[0] != 0 || state.position[0] != 0) {
->>>>>>> b8ba8db534f74aac728cd9548c5a6aef0a6d6a2d
                             tick.object_states.push_back(state);
                         }
                     }
@@ -118,15 +114,6 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
                 lastitem2++;
             }
         }
-        if (tick.is_host_updated)
-        {
-<<<<<<< HEAD
-            // std::cout << "Tick: " << tick.is_host_updated << std::endl;
-=======
-            //std::cout << "Tick: " << tick.is_host_updated << std::endl;
->>>>>>> b8ba8db534f74aac728cd9548c5a6aef0a6d6a2d
-        }
-
         w.tick(tick);
         last_frame++;
         if (last_frame == TICKS_PER_FRAME)
@@ -134,18 +121,12 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
             result.push_back(w.export_objects());
             last_frame = 0;
         }
-<<<<<<< HEAD
-        // std::cout << w.time << " " << w.host.prediction.x << " " << w.host.prediction.y << std::endl;
-        // std::cout << w.objects.size() << std::endl;
-=======
-        //std::cout << w.time << " " << w.host.prediction.x << " " << w.host.prediction.y << std::endl;
-        //std::cout << w.objects.size() << std::endl;
->>>>>>> b8ba8db534f74aac728cd9548c5a6aef0a6d6a2d
+
         std::cout << lastitem2 << " " << values[3].size() << "\n";
     }
 
     std::string outputstring = "[";
-    for (int x = 0; x < 50; x++)
+    for (int x = 0; x < result.size(); x++)
     {
         outputstring += "[";
         for (int p = 0; p < result[x].size(); p++)

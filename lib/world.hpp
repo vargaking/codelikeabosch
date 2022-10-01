@@ -13,7 +13,7 @@
 
 const double pi = 3.14159265358979;
 
-inline double to_radian (double &degrees)
+inline double to_radian(double &degrees)
 {
     return (pi * degrees) / 180;
 }
@@ -56,15 +56,17 @@ public:
 
 class Object
 {
-    public:
-        ObjectType type;
-        MeasuredState measurement;
-        EstimateState estimate;
-        PredictionState prediction;
-        int id;
-        int timeout;
+public:
+    ObjectType type;
+    MeasuredState measurement;
+    EstimateState estimate;
+    PredictionState prediction;
+    int id;
+    int timeout;
 
-        Object (MeasuredState &initial_state)
+    Object(MeasuredState &initial_state)
+    {
+        for (int i = 0; i < 3; i++)
         {
             estimate.error[i] = measurement.error[i];
         }
@@ -153,7 +155,9 @@ public:
 
     HostObject() = default;
 
-        HostObject (HostMeasuredState &initial_state)
+    HostObject(HostMeasuredState &initial_state)
+    {
+        for (int i = 0; i < 3; i++)
         {
             estimate.error[i] = measurement.error[i];
         }
@@ -307,8 +311,9 @@ public:
         host_ready = false;
     }
 
-    void update_objects(std::vector<MeasuredState> sensor_data)
+    void update_objects(std::vector<MeasuredState> &sensor_data)
     {
+        std::cout << "sensor_data.size(): " << sensor_data.size() << "\n";
         if (!host_ready)
             return;
 
@@ -322,24 +327,10 @@ public:
             data.acceleration[1] += host.estimate.ay;
         }
 
-        void update_objects (std::vector<MeasuredState> &sensor_data)
-        {
-            std::cout << "sensor_data.size(): " << sensor_data.size() << "\n";
-            if (!host_ready) return;
-
-            for (auto &data : sensor_data) {
-                data.position[0] += host.estimate.x;
-                data.position[1] += host.estimate.y;
-                data.velocity[0] += host.estimate.vx;
-                data.velocity[1] += host.estimate.vy;
-                data.acceleration[0] += host.estimate.ax;
-                data.acceleration[1] += host.estimate.ay;
-            }
-
-            // trying to merge new measurements into existing objects
-            // if an object does not have a match, it is most likely in a blind spot
-            // if a measurement does not have a match, it is most likely a new object
-            std::vector<bool> object_has_match(objects.size(), false), data_has_match(sensor_data.size(), false);
+        // trying to merge new measurements into existing objects
+        // if an object does not have a match, it is most likely in a blind spot
+        // if a measurement does not have a match, it is most likely a new object
+        std::vector<bool> object_has_match(objects.size(), false), data_has_match(sensor_data.size(), false);
 
         for (int i = 0; i < objects.size(); i++)
         {
@@ -350,15 +341,16 @@ public:
                     continue;
                 }
 
-                    bool match = true;
-                    for (int axis = 0; axis < 3; axis++) {
-                        double object_pos = objects[i].prediction.position[axis];
-                        double new_pos = sensor_data[j].position[axis];
-                        double difference = std::abs(new_pos - object_pos);
-                        if (difference > MERGE_DISTANCE) {
-                            match = false;
-                            break;
-                        }
+                bool match = true;
+                for (int axis = 0; axis < 3; axis++)
+                {
+                    double object_pos = objects[i].prediction.position[axis];
+                    double new_pos = sensor_data[j].position[axis];
+                    double difference = std::abs(new_pos - object_pos);
+                    if (difference > MERGE_DISTANCE)
+                    {
+                        match = false;
+                        break;
                     }
                 }
 
@@ -381,12 +373,9 @@ public:
                 }
                 objects[i].timeout++;
             }
-
-            while (true) {
-                auto it = std::find_if(objects.begin(), objects.end(), [&] (auto &i) { return i.timeout > TIMEOUT_TICKS; });
-                if (it == objects.end()) break;
-
-                objects.erase(it);
+            else
+            {
+                objects[i].timeout = 0;
             }
             objects[i].update();
         }
@@ -397,10 +386,11 @@ public:
                                    { return i.timeout > TIMEOUT_TICKS; });
             if (it == objects.end())
                 break;
+
             objects.erase(it);
         }
 
-        void tick (TickData &data)
+        for (int i = 0; i < sensor_data.size(); i++)
         {
             if (!data_has_match[i])
             {
@@ -409,7 +399,7 @@ public:
         }
     }
 
-    void tick(const TickData &data)
+    void tick(TickData &data)
     {
         time = time + 0.01;
 
