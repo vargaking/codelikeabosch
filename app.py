@@ -9,7 +9,6 @@ class ObjectSnapshot:
     def __init__(self, obj):
         self.x = obj.get_x()
         self.y = obj.get_y()
-        self.z = obj.get_z()
         self.type = obj.get_type()
         self.id = obj.get_id()
 

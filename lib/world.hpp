@@ -239,6 +239,9 @@ class ObjectSnapshot {
                 case ObjectType::car_or_truck: {
                     type = "car_or_truck"; break;
                 }
+                default: {
+                    type = "unknown";
+                }
             }
             x = object.estimate.position[0] - host.estimate.x;
             y = object.estimate.position[1] - host.estimate.y;
