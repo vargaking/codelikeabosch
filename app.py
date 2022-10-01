@@ -7,15 +7,6 @@ import json
 app = Flask(__name__)
 CORS(app)
 
-
-class ObjectSnapshot:
-    def __init__(self, obj):
-        self.x = obj.get_x()
-        self.y = obj.get_y()
-        self.type = obj.get_type()
-        self.id = obj.get_id()
-
-
 @app.route('/testing')
 def testing():
     print("asd")

@@ -443,7 +443,7 @@ class World
         std::vector<ObjectSnapshot> export_objects ()
         {
             std::vector<ObjectSnapshot> result;
-            result.push_back(ObjectSnapshot(host));
+            if (host_ready) result.push_back(ObjectSnapshot(host));
             for (auto &object : objects) {
                 result.push_back(ObjectSnapshot(host, object));
             }

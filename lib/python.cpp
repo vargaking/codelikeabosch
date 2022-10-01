@@ -3,7 +3,7 @@
 #include <pybind11/complex.h>
 #include <pybind11/functional.h>
 #include <pybind11/chrono.h>
-#include "world.cpp"
+#include "world.hpp"
 #include <vector>
 #include <json.hpp>
 
