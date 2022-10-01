@@ -2,7 +2,6 @@
 import * as THREE from "three";
 
 
-
 class SceneObject {
     // colors for the types
     colors: {[index: string]:number} = {

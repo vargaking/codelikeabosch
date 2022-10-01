@@ -107,6 +107,9 @@ let view = new Main();
 
 let clock = new THREE.Clock();
 
+
+
+/*
 // initialize the scene with the object at the first timestamp
 movementData[0].objects.forEach((object, index) => {
   let sceneObject = new SceneObject(object.id, object.x, object.y, object.type);
