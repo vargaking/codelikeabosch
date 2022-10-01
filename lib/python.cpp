@@ -7,14 +7,17 @@ namespace py = pybind11;
 
 #define length size()
 
+#define TICKS_PER_FRAME 5
+
 std::string test()
 {
     return "Hello World!";
 }
 
-std::string testing(std::vector<std::vector<std::vector<float>>> values)
+std::vector<std::vector<ObjectSnapshot>> testing(std::vector<std::vector<std::vector<float>>> values)
 {
-
+    std::vector<std::vector<ObjectSnapshot>> result;
+    int last_frame = 0;
     float first = 0.01;
     float b = ceil(values[4][values[4].size() - 1][0] * 100.0) / 100.0;
     World w;
@@ -70,14 +73,26 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
         }
 
         w.tick(tick);
+        last_frame++;
+        if (last_frame == TICKS_PER_FRAME) {
+            result.push_back(w.export_objects());
+            last_frame = 0;
+        }
         std::cout << w.host.prediction.position[0] << " " << w.host.prediction.position[1] << std::endl;
     }
 
-    return "Hello World!";
+    return result;
 }
 
 PYBIND11_MODULE(lib, handle)
 {
     handle.def("test", &test);
     handle.def("testing", &testing);
+
+    py::class_<ObjectSnapshot>(handle, "ObjectSnapshot")
+        .def("get_type", &ObjectSnapshot::get_type)
+        .def("get_x", &ObjectSnapshot::get_x)
+        .def("get_y", &ObjectSnapshot::get_y)
+        .def("get_z", &ObjectSnapshot::get_z)
+        .def("get_id", &ObjectSnapshot::get_id);
 }

@@ -4,6 +4,13 @@ import pandas
 
 app = Flask(__name__)
 
+class ObjectSnapshot:
+    def __init__(self, obj):
+        self.x = obj.get_x()
+        self.y = obj.get_y()
+        self.z = obj.get_z()
+        self.type = obj.get_type()
+        self.id = obj.get_id()
 
 @app.route('/testing')
 def testing():
@@ -27,10 +34,13 @@ def testing():
 
         fileValues.append(longvalues)
 
-    return lib.testing(fileValues)
+    snapshots = lib.testing(fileValues)
+    ticks = []
+    for tick in snapshots:
+        objects = []
+        for obj in tick:
+            objects.append(ObjectSnapshot(obj))
+        ticks.append(objects)
+    
+    return ticks
 
-
-@app.route("/")
-def response():
-    input = [[["csa"]]]
-    return f"<p>{ lib.testing(input) }</p>"
