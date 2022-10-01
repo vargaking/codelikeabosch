@@ -118,13 +118,13 @@ class HostMeasuredState : public HostMotionState
 class HostEstimateState : public HostMotionState
 {
     public:
-        double position[2], gain[3], yaw_position, error[3];
+        double x, y, vx, vy, ax, ay, gain[3], yaw_position, error[3];
 };
 
 class HostPredictionState : public HostMotionState
 {
     public:
-        double position[2], yaw_position, error[3];
+        double x, y, vx, vy, ax, ay, yaw_position, error[3];
 };
 
 class HostObject
@@ -142,15 +142,17 @@ class HostObject
                 estimate.error[i] = measurement.error[i];
             }
 
-            for (int axis = 0; axis < 2; axis++) {
-                estimate.position[axis] = 0;
-            }
-
             estimate.velocity = initial_state.velocity;
             estimate.acceleration = initial_state.acceleration;
+            estimate.yaw_rate = initial_state.yaw_rate;
 
             estimate.yaw_position = 0;
-            estimate.yaw_rate = initial_state.yaw_rate;
+            estimate.x = 0;
+            estimate.y = 0;
+            estimate.vx = 0;
+            estimate.vy = 0;
+            estimate.ax = 0;
+            estimate.ay = 0;
         }
 
         void update ()
@@ -160,16 +162,17 @@ class HostObject
                 estimate.error[i] = (1 - estimate.gain[i]) * prediction.error[i];
             }
 
-            estimate.velocity[axis] = prediction.velocity[axis] + estimate.gain[0] * (measurement.velocity[axis] - prediction.velocity[axis]);
-            estimate.acceleration[axis] = prediction.acceleration[axis] + estimate.gain[1] * (measurement.acceleration[axis] - prediction.acceleration[axis]);
-
-
-            for (int axis = 0; axis < 2; axis++) {
-                estimate.position[axis] = prediction.position[axis];
-            }
+            estimate.velocity = prediction.velocity + estimate.gain[0] * (measurement.velocity - prediction.velocity);
+            estimate.acceleration = prediction.acceleration + estimate.gain[1] * (measurement.acceleration - prediction.acceleration);
+            estimate.yaw_rate = prediction.yaw_rate + estimate.gain[2] * (measurement.yaw_rate - prediction.yaw_rate);
 
             estimate.yaw_position = prediction.yaw_position;
-            estimate.yaw_rate = prediction.yaw_rate + estimate.gain[2] * (measurement.yaw_rate - prediction.yaw_rate);
+            estimate.x = prediction.x;
+            estimate.y = prediction.y;
+            estimate.vx = prediction.vx;
+            estimate.vy = prediction.vy;
+            estimate.ax = prediction.ax;
+            estimate.ay = prediction.ay;
         }
 
         void predict (double dt, double process_noise[2])
@@ -183,9 +186,13 @@ class HostObject
             prediction.yaw_rate = estimate.yaw_rate;
             prediction.yaw_position = estimate.yaw_position + (estimate.yaw_rate * dt);
 
-            double shift = (estimate.velocity[axis] * dt) + (0.5 * estimate.acceleration[axis] * std::pow(dt, 2));
-            prediction.position[0] += shift * std::cos(estimate.yaw_position);
-            prediction.position[1] += shift * std::sin(estimate.yaw_position);
+            double shift = (estimate.velocity * dt) + (0.5 * estimate.acceleration * std::pow(dt, 2));
+            prediction.x += shift * std::cos(estimate.yaw_position);
+            prediction.y += shift * std::sin(estimate.yaw_position);
+            prediction.vx = estimate.velocity * std::cos(estimate.yaw_position);
+            prediction.vy = estimate.velocity * std::sin(estimate.yaw_position);
+            prediction.ax = estimate.acceleration * std::cos(estimate.yaw_position);
+            prediction.ay = estimate.acceleration * std::sin(estimate.yaw_position);
         }
 };
 
@@ -233,9 +240,9 @@ class ObjectSnapshot {
                     type = "car_or_truck"; break;
                 }
             }
-            x = object.prediction.position[0] - host.prediction.position[0];
-            y = object.prediction.position[1] - host.prediction.position[1];
-            z = object.prediction.position[2];
+            x = object.estimate.position[0] - host.estimate.x;
+            y = object.estimate.position[1] - host.estimate.y;
+            z = object.estimate.position[2];
 
             id = object.id;
         }
@@ -267,11 +274,12 @@ class World
             if (!host_ready) return;
 
             for (auto &data : sensor_data) {
-                for (int axis = 0; axis < 2; axis++) {
-                    data.position[axis] += host.estimate.position[axis];
-                    data.velocity[axis] += host.estimate.velocity[axis];
-                    data.acceleration[axis] += host.estimate.acceleration[axis];
-                }
+                data.position[0] += host.estimate.x;
+                data.position[1] += host.estimate.y;
+                data.velocity[0] += host.estimate.vx;
+                data.velocity[1] += host.estimate.vy;
+                data.acceleration[0] += host.estimate.ax;
+                data.acceleration[1] += host.estimate.ay;
             }
 
             // trying to merge new measurements into existing objects
