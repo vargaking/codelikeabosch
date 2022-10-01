@@ -1,9 +1,11 @@
 from flask import Flask, request
+from flask_cors import CORS
 import lib
 import pandas
 import json
 
 app = Flask(__name__)
+CORS(app)
 
 
 class ObjectSnapshot:
@@ -16,6 +18,7 @@ class ObjectSnapshot:
 
 @app.route('/testing')
 def testing():
+    print("asd")
     fileNames = ["Group_340", "Group_342",
                  "Group_343", "Group_349", "Group_416"]
 
@@ -37,5 +40,14 @@ def testing():
         fileValues.append(longvalues)
 
     snapshots = lib.testing(fileValues)
+    ticks = []
+    for tick in snapshots:
+        objects = []
+        for obj in tick:
+            s = ObjectSnapshot(obj)
+            objects.append(s.__dict__)
+        ticks.append(objects)
+
+
 
     return snapshots

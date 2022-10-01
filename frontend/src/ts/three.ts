@@ -6,7 +6,6 @@ import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
-import carMtl from "./src/models/f.mtl";
 
 class Main {
     scene: THREE.Scene;
@@ -17,7 +16,13 @@ class Main {
     public prevObjects: SceneObject[] = [];
     public renderObjects: THREE.Mesh[] = [];
 
-    constructor() {
+    public mainCarObj: THREE.Mesh;
+    public carObj: THREE.Mesh;
+
+    clock: THREE.Clock;
+    delta: number;
+
+    constructor(public manager: any) {
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
@@ -27,7 +32,12 @@ class Main {
         this.renderer.setClearColor( 0xe3e1e1, 0);
         document.body.appendChild(this.renderer.domElement);
 
-        const manager = new THREE.LoadingManager();
+        this.manager = manager;
+
+        this.clock = new THREE.Clock();
+        this.delta = 0;
+
+        console.log(this.manager)
 
         // 2d scene
         // add a plane
@@ -105,27 +115,75 @@ class Main {
         const light = new THREE.AmbientLight(0x404040, 30); // soft white light
         this.scene.add(light);
 
+
+
+        const mainCarLoaderObj = new OBJLoader(this.manager);
+        const mainCarLoaderMtl = new MTLLoader(this.manager);
+
+        console.log("loading car");
+        
+        // load the mtl file
+        let loadObject = (url) => new Promise ((resolve, reject) => {
+            const mtlLoader = new MTLLoader();
+            mtlLoader.load(url, (materials) => {
+                materials.preload();
+                console.log("loaded mtl");
+                const objLoader = new OBJLoader(this.manager);
+                objLoader.setMaterials(materials);
+                objLoader.load(url.replace(".mtl", ".obj"), (object) => {
+                    console.log("loaded obj");
+                    resolve(object);
+                });
+            });
+        });
+        
+
+        loadObject("./src/models/kocsi_feheer.mtl").then((object) => { 
+            
+            this.carObj = object; 
+            console.log(object);
+        });
+
+
+        /*mainCarLoaderMtl.load("./src/models/kocsi_final.mtl", (materials) => {
+            materials.preload();
+
+            // load the obj file
+            mainCarLoaderObj.setMaterials(materials);
+            return mainCarLoaderObj.load("./src/models/kocsi_final.obj", (object) => {
+                object.position.y = .45;
+                // add the object to the scene
+                //this.mainCarObj = object;
+                return object;
+            });
+        });
+    
+        console.log(mainCar);
+
+
+        /*
+
+        
         const carLoaderObj = new OBJLoader(manager);
         const carLoaderMtl = new MTLLoader(manager);
 
-        /* // load the mtl file
-        carLoaderMtl.load("./src/models/kocsi_final.mtl", (materials) => {
+        // load the mtl file
+        carLoaderMtl.load("./src/models/car_white.mtl", (materials) => {
             materials.preload();
 
             // load the obj file
             carLoaderObj.setMaterials(materials);
-            carLoaderObj.load("./src/models/kocsi_final.obj", (object) => {
+            carLoaderObj.load("./src/models/car_white.obj", (object) => {
                 object.position.y = .45;
                 // add the object to the scene
-                this.scene.add(object);
+                this.carObj = object;
             });
-        });
+        });*/
 
-        manager.onLoad = () => {
-            console.log("loaded");
-            document.getElementById("loadingScreen").style.display = "none";
-        };
 
+        
+        
+        /*
         const truckLoaderObj = new OBJLoader(manager);
         const truckLoaderMtl = new MTLLoader(manager);
 
@@ -155,6 +213,10 @@ class Main {
 
 
         this.animate();
+    }
+
+    getCarObj() {
+        return this.carObj;
     }
 
     updateScene() {
@@ -214,6 +276,27 @@ class Main {
 
     animate() {
         requestAnimationFrame(this.animate.bind(this));
+
+        this.delta = this.clock.getDelta();
+
+
+        console.log(this.objects, "objects", this.objects.length);
+
+        // iter through the objects and update their position
+        this.objects.forEach((object) => {
+            let moveX = object.deltaX * this.delta;
+            let moveY = object.deltaY * this.delta;
+
+            
+            console.log(object.deltaX, "meheh");
+
+            let objectInScene = this.scene.getObjectByName(object.id);
+            
+            objectInScene.position.x += moveX;
+            objectInScene.position.z += moveY;
+
+        });
+
         this.renderer.render(this.scene, this.camera);
     }
 }

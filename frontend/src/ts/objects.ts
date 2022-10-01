@@ -11,11 +11,15 @@ class SceneObject {
         pedestrian: 0x0000ff
     };
 
-    constructor(public id: number, public x: number, public y: number, public type: string) {
+    
+
+    constructor(public id: number, public x: number, public y: number, public type: string, public deltaX: number = 0, public deltaY: number = 0) {
         this.id = id;
         this.x = x;
         this.y = y;
         this.type = type;
+        this.deltaX;
+        this.deltaY;
     }
 
     getokObject() {
@@ -60,6 +64,30 @@ class SceneObject {
                 scene.add(object);
             });
         });
+    }
+
+    async getCarObject(scene) {
+        const manager = new THREE.LoadingManager();
+
+        const carLoaderObj = new OBJLoader(manager);
+        const carLoaderMtl = new MTLLoader(manager);
+
+        let carObject;
+
+        // load the mtl file
+        await carLoaderMtl.load("./src/models/car_white.mtl", async (materials) => {
+            materials.preload();
+
+            // load the obj file
+            carLoaderObj.setMaterials(materials);
+            await carLoaderObj.load("./src/models/car_white.obj", (object) => {
+                object.position.y = .45;
+                // add the object to the scene
+                //scene.add(object);  
+                carObject = object;
+            });
+        });
+        return carObject;
     }
 }
 
