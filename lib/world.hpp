@@ -261,7 +261,6 @@ class ObjectSnapshot {
             }
             x = object.estimate.position[0];
             y = - object.estimate.position[1];
-            z = object.estimate.position[2];
 
             if (object.estimate.velocity[1] + object.estimate.velocity[0] > 1) {
                 angle = - (std::atan(object.estimate.velocity[1] / object.estimate.velocity[0]));
@@ -272,11 +271,21 @@ class ObjectSnapshot {
             id = object.id;
         }
 
+        ObjectSnapshot (HostObject &host)
+        {
+            type = "host";
+            x = host.estimate.x;
+            y = - host.estimate.y;
+            angle = - host.estimate.yaw_position;
+            id = 0;
+        }
+
         std::string get_type () { return type; }
         double get_x () { return x; }
         double get_y () { return y; }
         double get_z () { return z; }
         int get_id () { return id; }
+        double get_angle () { return angle; }
 };
 
 double distance (Object &p, Object &q) 
@@ -434,6 +443,7 @@ class World
         std::vector<ObjectSnapshot> export_objects ()
         {
             std::vector<ObjectSnapshot> result;
+            result.push_back(ObjectSnapshot(host));
             for (auto &object : objects) {
                 result.push_back(ObjectSnapshot(host, object));
             }
