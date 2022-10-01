@@ -12,11 +12,7 @@
 
 const double pi = 3.14159265358979;
 
-<<<<<<< HEAD
 inline double to_radian (double &degrees)
-=======
-inline double to_radian(double degrees)
->>>>>>> 4f2899b27dc9c548bbf434256ce0fc0d6def37ce
 {
     return (pi * degrees) / 180;
 }
@@ -59,7 +55,6 @@ public:
 
 class Object
 {
-<<<<<<< HEAD
     public:
         ObjectType type;
         MeasuredState measurement;
@@ -69,19 +64,6 @@ class Object
         int timeout;
 
         Object (MeasuredState &initial_state)
-=======
-public:
-    ObjectType type;
-    MeasuredState measurement;
-    EstimateState estimate;
-    PredictionState prediction;
-    int id;
-    int timeout;
-
-    Object(MeasuredState initial_state)
-    {
-        for (int i = 0; i < 3; i++)
->>>>>>> 4f2899b27dc9c548bbf434256ce0fc0d6def37ce
         {
             estimate.error[i] = measurement.error[i];
         }
@@ -170,13 +152,7 @@ public:
 
     HostObject() = default;
 
-<<<<<<< HEAD
         HostObject (HostMeasuredState &initial_state)
-=======
-    HostObject(HostMeasuredState initial_state)
-    {
-        for (int i = 0; i < 3; i++)
->>>>>>> 4f2899b27dc9c548bbf434256ce0fc0d6def37ce
         {
             estimate.error[i] = measurement.error[i];
         }
@@ -345,7 +321,6 @@ public:
             data.acceleration[1] += host.estimate.ay;
         }
 
-<<<<<<< HEAD
         void update_objects (std::vector<MeasuredState> &sensor_data)
         {
             std::cout << "sensor_data.size(): " << sensor_data.size() << "\n";
@@ -364,12 +339,6 @@ public:
             // if an object does not have a match, it is most likely in a blind spot
             // if a measurement does not have a match, it is most likely a new object
             std::vector<bool> object_has_match(objects.size(), false), data_has_match(sensor_data.size(), false);
-=======
-        // trying to merge new measurements into existing objects
-        // if an object does not have a match, it is most likely in a blind spot
-        // if a measurement does not have a match, it is most likely a new object
-        std::vector<bool> object_has_match(objects.size(), false), data_has_match(sensor_data.size(), false);
->>>>>>> 4f2899b27dc9c548bbf434256ce0fc0d6def37ce
 
         for (int i = 0; i < objects.size(); i++)
         {
@@ -380,7 +349,6 @@ public:
                     continue;
                 }
 
-<<<<<<< HEAD
                     bool match = true;
                     for (int axis = 0; axis < 3; axis++) {
                         double object_pos = objects[i].prediction.position[axis];
@@ -390,18 +358,6 @@ public:
                             match = false;
                             break;
                         }
-=======
-                bool match = true;
-                for (int axis = 0; axis < 3; axis++)
-                {
-                    int object_pos = objects[i].prediction.position[axis];
-                    int new_pos = sensor_data[j].position[axis];
-                    int difference = std::abs(new_pos - object_pos);
-                    if (difference > MERGE_DISTANCE)
-                    {
-                        match = false;
-                        break;
->>>>>>> 4f2899b27dc9c548bbf434256ce0fc0d6def37ce
                     }
                 }
 
@@ -424,18 +380,12 @@ public:
                 }
                 objects[i].timeout++;
             }
-<<<<<<< HEAD
 
             while (true) {
                 auto it = std::find_if(objects.begin(), objects.end(), [&] (auto &i) { return i.timeout > TIMEOUT_TICKS; });
                 if (it == objects.end()) break;
 
                 objects.erase(it);
-=======
-            else
-            {
-                objects[i].timeout = 0;
->>>>>>> 4f2899b27dc9c548bbf434256ce0fc0d6def37ce
             }
             objects[i].update();
         }
@@ -449,11 +399,7 @@ public:
             objects.erase(it);
         }
 
-<<<<<<< HEAD
         void tick (TickData &data)
-=======
-        for (int i = 0; i < sensor_data.size(); i++)
->>>>>>> 4f2899b27dc9c548bbf434256ce0fc0d6def37ce
         {
             if (!data_has_match[i])
             {
