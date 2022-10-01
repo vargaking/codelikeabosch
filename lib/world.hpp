@@ -8,7 +8,8 @@
 #include <algorithm>
 
 #define INFINITE_ERROR 1000000
-#define MERGE_DISTANCE 3
+#define DATA_MERGE_DISTANCE 2
+#define OBJECT_MERGE_DISTANCE 1
 #define TIMEOUT_TICKS 500
 
 const double pi = 3.14159265358979;
@@ -278,6 +279,22 @@ class ObjectSnapshot {
         int get_id () { return id; }
 };
 
+double distance (Object &p, Object &q) 
+{
+    double dx = std::abs(p.prediction.position[0] - q.prediction.position[0]);
+    double dy = std::abs(p.prediction.position[1] - q.prediction.position[1]);
+    double distance = std::sqrt(std::pow(dx, 2) + std::pow(dy, 2));
+    return distance;
+}
+
+double distance (Object &p, MeasuredState &q)
+{
+    double dx = std::abs(p.prediction.position[0] - q.position[0]);
+    double dy = std::abs(p.prediction.position[1] - q.position[1]);
+    double distance = std::sqrt(std::pow(dx, 2) + std::pow(dy, 2));
+    return distance;
+}
+
 class World 
 {
     public:
@@ -318,18 +335,7 @@ class World
                         continue;
                     }
 
-                    bool match = true;
-                    for (int axis = 0; axis < 3; axis++) {
-                        double object_pos = objects[i].prediction.position[axis];
-                        double new_pos = sensor_data[j].position[axis];
-                        double difference = std::abs(new_pos - object_pos);
-                        if (difference > MERGE_DISTANCE) {
-                            match = false;
-                            break;
-                        }
-                    }
-
-                    if (match) {
+                    if (distance(objects[i], sensor_data[j]) < DATA_MERGE_DISTANCE) {
                         object_has_match[i] = true;
                         data_has_match[j] = true;
                         objects[i].measurement = sensor_data[j];
@@ -352,13 +358,35 @@ class World
             while (true) {
                 auto it = std::find_if(objects.begin(), objects.end(), [&] (auto &i) { return i.timeout > TIMEOUT_TICKS; });
                 if (it == objects.end()) break;
-
                 objects.erase(it);
             }
 
             for (int i = 0; i < sensor_data.size(); i++) {
                 if (!data_has_match[i]) {
                     objects.push_back(Object(sensor_data[i]));
+                }
+            }
+        }
+
+        void merge_objects ()
+        {
+            while (true) {
+                bool found = false;
+                int index;
+                for (int i = 0; i < objects.size(); i++) {
+                    for (int j = i; j < objects.size(); j++) {
+                        if (distance(objects[i], objects[j]) < OBJECT_MERGE_DISTANCE) {
+                            index = j;
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                break_:
+                if (found) {
+                    objects.erase(objects.begin() + index);
+                } else {
+                    break;
                 }
             }
         }
@@ -375,6 +403,8 @@ class World
                     host.predict(0.01, process_noise);
                 }
             } else {
+                merge_objects();
+
                 if (data.is_host_updated) {
                     host.measurement = data.host_state;
                     host.update();

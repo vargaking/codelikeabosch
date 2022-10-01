@@ -7,7 +7,7 @@ else
 endif
 
 
-lib$(suffix): python.cpp world.cpp
+lib$(suffix): python.cpp
 	$(add_flags)$@ $^
 
 .PHONY: clean
