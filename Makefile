@@ -11,7 +11,7 @@ ifeq ($(uname),Linux)
 	PYTHON_CONFIG := python3-config
 endif
 
-CXXFLAGS := --std=c++17 -O3 -Wno-write-strings -I$(shell pwd)/include -I$(shell pwd)/include/pybind11/include $(shell $(PYTHON_CONFIG) --includes 2> /dev/null || ~$(PYTHON_CONFIG) --includes)
+CXXFLAGS := --std=c++17 -O1 -Wno-write-strings -I$(shell pwd)/include -I$(shell pwd)/include/pybind11/include $(shell $(PYTHON_CONFIG) --includes 2> /dev/null || ~$(PYTHON_CONFIG) --includes)
 
 suffix = $(shell $(PYTHON_CONFIG) --extension-suffix 2> /dev/null || ~$(PYTHON_CONFIG) --extension-suffix)
 
