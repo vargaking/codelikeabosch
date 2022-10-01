@@ -18,6 +18,7 @@ class Main {
 
     public mainCarObj: THREE.Mesh;
     public carObj: THREE.Mesh;
+    public truckObj: THREE.Mesh;
 
     clock: THREE.Clock;
     delta: number;
@@ -41,7 +42,7 @@ class Main {
 
         // 2d scene
         // add a plane
-        const planeGeometry = new THREE.PlaneGeometry(60, 5);
+        const planeGeometry = new THREE.PlaneGeometry(150, 5);
         const planeMaterial = new THREE.MeshBasicMaterial({ color: 0xd1d1d1, side: THREE.DoubleSide });
         
         const road1 = new THREE.Mesh(planeGeometry, planeMaterial);
@@ -69,7 +70,7 @@ class Main {
         this.scene.add(road3);
 
         // add a plane that separates the road
-        const planeGeometry2 = new THREE.PlaneGeometry(60, 0.1);
+        const planeGeometry2 = new THREE.PlaneGeometry(150, 0.1);
         const planeMaterial2 = new THREE.MeshBasicMaterial({ color: 0x828181, side: THREE.DoubleSide });
 
         const roadSeparator1 = new THREE.Mesh(planeGeometry2, planeMaterial2);
@@ -144,6 +145,12 @@ class Main {
             console.log(object);
         });
 
+        loadObject("./src/models/truck_fin2.mtl").then((object) => { 
+            
+            this.truckObj = object; 
+            console.log(object);
+        });
+
 
         /*mainCarLoaderMtl.load("./src/models/kocsi_final.mtl", (materials) => {
             materials.preload();
@@ -207,7 +214,7 @@ class Main {
             });
         });*/
 
-        const fog = new THREE.Fog(0xffffff, 0, 55);
+        const fog = new THREE.Fog(0xffffff, 0, 70);
         this.scene.fog = fog;
 
 
@@ -280,7 +287,7 @@ class Main {
         this.delta = this.clock.getDelta();
 
 
-        console.log(this.objects, "objects", this.objects.length);
+        //console.log(this.objects, "objects", this.objects.length);
 
         // iter through the objects and update their position
         this.objects.forEach((object) => {
@@ -288,7 +295,7 @@ class Main {
             let moveY = object.deltaY * this.delta;
 
             
-            console.log(object.deltaX, "meheh");
+            //console.log(object.deltaX, "meheh");
 
             let objectInScene = this.scene.getObjectByName(object.id);
             
