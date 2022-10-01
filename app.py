@@ -30,7 +30,7 @@ def testing():
 
         counter = 0
         for index, row in df.iterrows():
-            if (counter == 200):
+            if (counter == 10000):
                 break
             counter += 1
             value = []
@@ -41,12 +41,5 @@ def testing():
         fileValues.append(longvalues)
 
     snapshots = lib.testing(fileValues)
-    ticks = []
-    for tick in snapshots:
-        objects = []
-        for obj in tick:
-            s = ObjectSnapshot(obj)
-            objects.append(s.__dict__)
-        ticks.append(objects)
 
-    return ticks
+    return snapshots
