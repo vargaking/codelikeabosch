@@ -25,11 +25,13 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
     int last_frame = 0;
     int lastitem1 = 0;
     int lastitem2 = 0;
-    float first = 0.01;
-    float b = ceil(values[4][values[4].size() - 1][0] * 100.0) / 100.0;
+    int first = 1;
+
+    int b = ceil(values[4][values[4].size() - 1][0] * 100.0);
+
     World w;
 
-    for (float f = first; f <= b; f += first)
+    for (int f = first; f <= b; f += first)
     {
         TickData tick;
         tick.is_host_updated = false;
@@ -43,8 +45,8 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
         tick.object_states = object_states;
         if (lastitem1 < values[4].size())
         {
-            float timestamp = ceil(values[4][lastitem1][0] * 100.0);
-            if (timestamp == int(f * 100))
+            int timestamp = ceil(values[4][lastitem1][0] * 100.0);
+            if (timestamp == f)
             {
                 tick.is_host_updated = true;
                 tick.host_state.velocity = values[4][lastitem1][5] / 256.0;
@@ -56,7 +58,7 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
         if (lastitem2 < values[3].size())
         {
             int timestamp2 = ceil(values[3][lastitem2][0] * 100.0);
-            if (timestamp2 == int(f * 100))
+            if (timestamp2 == f)
             {
                 std::vector<MeasuredState> object_states;
 
@@ -128,16 +130,16 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
             last_frame = 0;
         }
         std::cout << w.time << " " << w.host.prediction.x << " " << w.host.prediction.y << std::endl;
-        std::cout << b << std::endl;
+        std::cout << w.objects.size() << std::endl;
     }
 
     std::string outputstring = "[";
-    for (int x = 0; x < 200; x++)
+    for (int x = 0; x < 50; x++)
     {
         outputstring += "[";
         for (int p = 0; p < result[x].size(); p++)
         {
-            std::cout << result[x][p].x << std::endl;
+
             json j2 = {
                 {"x", result[x][p].x},
                 {"y", result[x][p].y},

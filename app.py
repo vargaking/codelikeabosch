@@ -28,11 +28,7 @@ def testing():
         for name in df.columns:
             keys.append(name)
 
-        counter = 0
         for index, row in df.iterrows():
-            if (counter == 10000):
-                break
-            counter += 1
             value = []
             for key in keys:
                 value.append(row[key])
