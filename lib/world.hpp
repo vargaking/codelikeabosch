@@ -5,6 +5,7 @@
 #include <string>
 #include <cmath>
 #include <random>
+#include <algorithm>
 
 #define INFINITE_ERROR 1000000
 #define MERGE_DISTANCE 3
