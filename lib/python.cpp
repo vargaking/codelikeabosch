@@ -26,8 +26,9 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
         tick.host_state = HostMeasuredState();
         for (int p = 0; p < 3; p++)
         {
-            tick.host_state.error[p] = 0.1;
+            tick.host_state.error[p] = 0;
         }
+
         std::vector<MeasuredState> object_states;
         tick.object_states = object_states;
 
@@ -37,6 +38,11 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
             if (timestamp == int(f * 100))
             {
                 tick.is_host_updated = true;
+                tick.host_state.velocity[0] = values[4][i][5] / 256.0;
+                tick.host_state.velocity[1] = values[4][i][6] / 256.0;
+                tick.host_state.acceleration[0] = values[4][i][1] / 2048.0;
+                tick.host_state.acceleration[1] = values[4][i][2] / 2048.0;
+                tick.host_state.yaw_rate = values[4][i][3] / 16384.0;
             }
         }
         for (int i = 0; i < values[3].size(); i++)
@@ -51,7 +57,7 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
                     state.type = ObjectType((int)values[3][i][o]);
                     for (int p = 0; p < 3; p++)
                     {
-                        state.error[p] = 0.1;
+                        state.error[p] = 0;
                     }
                     object_states.push_back(state);
                 }
@@ -64,6 +70,7 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
         }
 
         w.tick(tick);
+        std::cout << w.host.prediction.position[0] << " " << w.host.prediction.position[1] << std::endl;
     }
 
     return "Hello World!";
