@@ -42,7 +42,7 @@ std::vector<std::vector<ObjectSnapshot>> testing(std::vector<std::vector<std::ve
             {
                 tick.is_host_updated = true;
                 tick.host_state.velocity = values[4][i][5] / 256.0;
-                tick.host_state.acceleration[0] = values[4][i][1] / 2048.0;
+                tick.host_state.acceleration = values[4][i][1] / 2048.0;
                 tick.host_state.yaw_rate = values[4][i][3] / 16384.0;
             }
         }
@@ -118,7 +118,7 @@ std::vector<std::vector<ObjectSnapshot>> testing(std::vector<std::vector<std::ve
             result.push_back(w.export_objects());
             last_frame = 0;
         }
-        std::cout << w.time << " " << w.host.prediction.position[0] << " " << w.host.prediction.position[1] << std::endl;
+        std::cout << w.time << " " << w.host.prediction.x << " " << w.host.prediction.y << std::endl;
     }
 
     return result;

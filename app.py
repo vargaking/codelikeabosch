@@ -5,12 +5,14 @@ import json
 
 app = Flask(__name__)
 
+
 class ObjectSnapshot:
     def __init__(self, obj):
         self.x = obj.get_x()
         self.y = obj.get_y()
         self.type = obj.get_type()
         self.id = obj.get_id()
+
 
 @app.route('/testing')
 def testing():
@@ -28,7 +30,7 @@ def testing():
 
         counter = 0
         for index, row in df.iterrows():
-            if counter >= 10:
+            if (counter == 200):
                 break
             counter += 1
             value = []
@@ -46,10 +48,5 @@ def testing():
             s = ObjectSnapshot(obj)
             objects.append(s.__dict__)
         ticks.append(objects)
-    
+
     return ticks
-
-
-
-
-

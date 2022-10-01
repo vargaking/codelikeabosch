@@ -11,5 +11,9 @@
   "devDependencies": {
     "typescript": "^4.6.4",
     "vite": "^3.1.0"
+  },
+  "dependencies": {
+    "three": "^0.145.0",
+    "three-orbitcontrols": "^2.110.3"
   }
 }
