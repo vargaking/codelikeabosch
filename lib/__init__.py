@@ -1,1 +1,1 @@
-from lib.lib import *
+from lib.lib import test
