@@ -120,6 +120,7 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
         }
 
         std::cout << lastitem2 << " " << values[3].size() << "\n";
+        std::cout << "obj count: " << w.objects.size() << "\n";
     }
 
     std::string outputstring = "[";
@@ -134,6 +135,7 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
                 {"y", result[x][p].y},
                 {"type", result[x][p].type},
                 {"id", result[x][p].id},
+                {"angle", result[x][p].angle}
             };
             std::string jfa = to_string(j2);
             outputstring += jfa;
