@@ -14,7 +14,7 @@ std::string test()
     return "Hello World!";
 }
 
-std::string testing(std::vector<std::vector<std::vector<float>>> values)
+std::vector<std::vector<ObjectSnapshot>> testing(std::vector<std::vector<std::vector<float>>> values)
 {
     std::vector<std::vector<ObjectSnapshot>> result;
     int last_frame = 0;
@@ -123,7 +123,7 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
         std::cout << w.time << " " << w.host.prediction.position[0] << " " << w.host.prediction.position[1] << std::endl;
     }
 
-    return "csa";
+    return result;
 }
 
 PYBIND11_MODULE(lib, handle)
