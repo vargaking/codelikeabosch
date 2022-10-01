@@ -1,9 +1,11 @@
 from flask import Flask, request
+from flask_cors import CORS
 import lib
 import pandas
 import json
 
 app = Flask(__name__)
+CORS(app)
 
 
 class ObjectSnapshot:
@@ -48,5 +50,7 @@ def testing():
             s = ObjectSnapshot(obj)
             objects.append(s.__dict__)
         ticks.append(objects)
+
+
 
     return ticks
