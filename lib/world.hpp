@@ -227,6 +227,7 @@ class ObjectSnapshot {
     public:
         std::string type;
         double x, y, z;
+        double angle;
         int id;
 
         ObjectSnapshot (HostObject &host, Object &object)
@@ -257,9 +258,15 @@ class ObjectSnapshot {
                     type = "unknown";
                 }
             }
-            x = object.estimate.position[0] - host.estimate.x;
-            y = object.estimate.position[1] - host.estimate.y;
+            x = object.estimate.position[0];
+            y = - object.estimate.position[1];
             z = object.estimate.position[2];
+
+            if (object.estimate.velocity[1] + object.estimate.velocity[0] > 1) {
+                angle = - (std::atan(object.estimate.velocity[1] / object.estimate.velocity[0]));
+            } else {
+                angle = 0;
+            }
 
             id = object.id;
         }

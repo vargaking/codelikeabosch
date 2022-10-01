@@ -101,7 +101,8 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
                         state.velocity[1] = values[3][lastitem2][354 + t + y] / 256.0;
                         state.velocity[2] = values[3][lastitem2][395 + t + y] / 256.0;
 
-                        if (state.position[0] != 0 || state.position[0] != 0) {
+                        if (state.position[0] != 0 || state.position[0] != 0)
+                        {
                             tick.object_states.push_back(state);
                         }
                     }
@@ -109,7 +110,6 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
                 lastitem2++;
             }
         }
-
 
         w.tick(tick);
         last_frame++;
@@ -120,6 +120,7 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
         }
 
         std::cout << lastitem2 << " " << values[3].size() << "\n";
+        std::cout << "obj count: " << w.objects.size() << "\n";
     }
 
     std::string outputstring = "[";
@@ -134,6 +135,7 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
                 {"y", result[x][p].y},
                 {"type", result[x][p].type},
                 {"id", result[x][p].id},
+                {"angle", result[x][p].angle}
             };
             std::string jfa = to_string(j2);
             outputstring += jfa;
