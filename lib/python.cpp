@@ -10,8 +10,6 @@
 namespace py = pybind11;
 using json = nlohmann::json;
 
-#define length size()
-
 #define TICKS_PER_FRAME 5
 
 std::string test()
@@ -25,11 +23,13 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
     int last_frame = 0;
     int lastitem1 = 0;
     int lastitem2 = 0;
-    float first = 0.01;
-    float b = ceil(values[4][values[4].size() - 1][0] * 100.0) / 100.0;
+    int first = 1;
+
+    int b = ceil(values[4][values[4].size() - 1][0] * 100.0);
+
     World w;
 
-    for (float f = first; f <= b; f += first)
+    for (int f = first; f <= b; f += first)
     {
         TickData tick;
         tick.is_host_updated = false;
@@ -40,11 +40,10 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
         }
 
         std::vector<MeasuredState> object_states;
-        tick.object_states = object_states;
         if (lastitem1 < values[4].size())
         {
-            float timestamp = ceil(values[4][lastitem1][0] * 100.0);
-            if (timestamp == int(f * 100))
+            int timestamp = ceil(values[4][lastitem1][0] * 100.0);
+            if (timestamp == f)
             {
                 tick.is_host_updated = true;
                 tick.host_state.velocity = values[4][lastitem1][5] / 256.0;
@@ -56,9 +55,8 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
         if (lastitem2 < values[3].size())
         {
             int timestamp2 = ceil(values[3][lastitem2][0] * 100.0);
-            if (timestamp2 == int(f * 100))
+            if (timestamp2 <= f)
             {
-                std::vector<MeasuredState> object_states;
 
                 for (int o = 0; o <= 14; o++)
                 {
@@ -85,39 +83,39 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
                         state.acceleration[1] = 0;
                         state.acceleration[2] = 0;
 
-                        object_states.push_back(state);
+                        tick.object_states.push_back(state);
                     }
-
-                    for (int y = 0; y < 41; y += 4)
+                }
+                for (int y = 0; y < 41; y += 4)
+                {
+                    for (int t = 0; t < 4; t++)
                     {
-                        for (int t = 0; t < 4; t++)
+                        MeasuredState state;
+                        state.type = ObjectType::unknown;
+                        for (int p = 0; p < 3; p++)
                         {
-                            MeasuredState state;
-                            state.type = ObjectType::unknown;
-                            for (int p = 0; p < 3; p++)
-                            {
-                                state.error[p] = 0;
-                            }
-                            state.acceleration[0] = values[3][lastitem2][67 + t + y] / 2048.0;
-                            state.acceleration[1] = values[3][lastitem2][108 + t + y] / 2048.0;
-                            state.acceleration[2] = 0;
-                            state.position[0] = values[3][lastitem2][149 + t + y] / 128.0;
-                            state.position[1] = values[3][lastitem2][190 + t + y] / 128.0;
-                            state.position[2] = values[3][lastitem2][231 + t + y] / 128.0;
-                            state.velocity[0] = values[3][lastitem2][313 + t + y] / 256.0;
-                            state.velocity[1] = values[3][lastitem2][354 + t + y] / 256.0;
-                            state.velocity[2] = values[3][lastitem2][395 + t + y] / 256.0;
-                            object_states.push_back(state);
+                            state.error[p] = 0;
+                        }
+                        state.acceleration[0] = values[3][lastitem2][67 + t + y] / 2048.0;
+                        state.acceleration[1] = values[3][lastitem2][108 + t + y] / 2048.0;
+                        state.acceleration[2] = 0;
+                        state.position[0] = values[3][lastitem2][149 + t + y] / 128.0;
+                        state.position[1] = values[3][lastitem2][190 + t + y] / 128.0;
+                        state.position[2] = values[3][lastitem2][231 + t + y] / 128.0;
+                        state.velocity[0] = values[3][lastitem2][313 + t + y] / 256.0;
+                        state.velocity[1] = values[3][lastitem2][354 + t + y] / 256.0;
+                        state.velocity[2] = values[3][lastitem2][395 + t + y] / 256.0;
+                        if (state.position[0] != 0 || state.position[0] != 0) {
+                            tick.object_states.push_back(state);
                         }
                     }
-                    tick.object_states = object_states;
                 }
                 lastitem2++;
             }
         }
         if (tick.is_host_updated)
         {
-            std::cout << "Tick: " << tick.is_host_updated << std::endl;
+            //std::cout << "Tick: " << tick.is_host_updated << std::endl;
         }
 
         w.tick(tick);
@@ -127,17 +125,18 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
             result.push_back(w.export_objects());
             last_frame = 0;
         }
-        std::cout << w.time << " " << w.host.prediction.x << " " << w.host.prediction.y << std::endl;
-        std::cout << b << std::endl;
+        //std::cout << w.time << " " << w.host.prediction.x << " " << w.host.prediction.y << std::endl;
+        //std::cout << w.objects.size() << std::endl;
+        std::cout << lastitem2 << " " << values[3].size() << "\n";
     }
 
     std::string outputstring = "[";
-    for (int x = 0; x < 200; x++)
+    for (int x = 0; x < 50; x++)
     {
         outputstring += "[";
         for (int p = 0; p < result[x].size(); p++)
         {
-            std::cout << result[x][p].x << std::endl;
+
             json j2 = {
                 {"x", result[x][p].x},
                 {"y", result[x][p].y},

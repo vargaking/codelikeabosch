@@ -12,7 +12,7 @@
 
 const double pi = 3.14159265358979;
 
-inline double to_radian (double degrees)
+inline double to_radian (double &degrees)
 {
     return (pi * degrees) / 180;
 }
@@ -63,7 +63,7 @@ class Object
         int id;
         int timeout;
 
-        Object (MeasuredState initial_state)
+        Object (MeasuredState &initial_state)
         {
             for (int i = 0; i < 3; i++) {
                 estimate.error[i] = measurement.error[i];
@@ -149,7 +149,7 @@ class HostObject
 
         HostObject () = default;
 
-        HostObject (HostMeasuredState initial_state)
+        HostObject (HostMeasuredState &initial_state)
         {
             for (int i = 0; i < 3; i++) {
                 estimate.error[i] = measurement.error[i];
@@ -285,8 +285,9 @@ class World
             host_ready = false;
         }
 
-        void update_objects (std::vector<MeasuredState> sensor_data)
+        void update_objects (std::vector<MeasuredState> &sensor_data)
         {
+            std::cout << "sensor_data.size(): " << sensor_data.size() << "\n";
             if (!host_ready) return;
 
             for (auto &data : sensor_data) {
@@ -311,9 +312,9 @@ class World
 
                     bool match = true;
                     for (int axis = 0; axis < 3; axis++) {
-                        int object_pos = objects[i].prediction.position[axis];
-                        int new_pos = sensor_data[j].position[axis];
-                        int difference = std::abs(new_pos - object_pos);
+                        double object_pos = objects[i].prediction.position[axis];
+                        double new_pos = sensor_data[j].position[axis];
+                        double difference = std::abs(new_pos - object_pos);
                         if (difference > MERGE_DISTANCE) {
                             match = false;
                             break;
@@ -343,6 +344,7 @@ class World
             while (true) {
                 auto it = std::find_if(objects.begin(), objects.end(), [&] (auto &i) { return i.timeout > TIMEOUT_TICKS; });
                 if (it == objects.end()) break;
+
                 objects.erase(it);
             }
 
@@ -353,7 +355,7 @@ class World
             }
         }
 
-        void tick (const TickData &data)
+        void tick (TickData &data)
         {
             time = time + 0.01;
 
