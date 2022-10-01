@@ -14,7 +14,7 @@ std::string test()
     return "Hello World!";
 }
 
-std::string testing(std::vector<std::vector<std::vector<float>>> values)
+std::vector<std::vector<ObjectSnapshot>> testing(std::vector<std::vector<std::vector<float>>> values)
 {
     std::vector<std::vector<ObjectSnapshot>> result;
     int last_frame = 0;
@@ -41,10 +41,8 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
             if (timestamp == int(f * 100))
             {
                 tick.is_host_updated = true;
-                tick.host_state.velocity[0] = values[4][i][5] / 256.0;
-                tick.host_state.velocity[1] = values[4][i][6] / 256.0;
+                tick.host_state.velocity = values[4][i][5] / 256.0;
                 tick.host_state.acceleration[0] = values[4][i][1] / 2048.0;
-                tick.host_state.acceleration[1] = values[4][i][2] / 2048.0;
                 tick.host_state.yaw_rate = values[4][i][3] / 16384.0;
             }
         }
@@ -123,7 +121,7 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
         std::cout << w.time << " " << w.host.prediction.position[0] << " " << w.host.prediction.position[1] << std::endl;
     }
 
-    return "csa";
+    return result;
 }
 
 PYBIND11_MODULE(lib, handle)

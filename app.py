@@ -35,9 +35,6 @@ def testing():
                 break
             counter += 1
             value = []
-            counter += 1
-            if (counter == 200):
-                break
             for key in keys:
                 value.append(row[key])
             longvalues.append(value)
