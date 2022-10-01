@@ -27,9 +27,11 @@ class Main {
         this.renderer.setClearColor( 0xe3e1e1, 0);
         document.body.appendChild(this.renderer.domElement);
 
+        const manager = new THREE.LoadingManager();
+
         // 2d scene
         // add a plane
-        const planeGeometry = new THREE.PlaneGeometry(40, 5);
+        const planeGeometry = new THREE.PlaneGeometry(60, 5);
         const planeMaterial = new THREE.MeshBasicMaterial({ color: 0xd1d1d1, side: THREE.DoubleSide });
         
         const road1 = new THREE.Mesh(planeGeometry, planeMaterial);
@@ -57,8 +59,8 @@ class Main {
         this.scene.add(road3);
 
         // add a plane that separates the road
-        const planeGeometry2 = new THREE.PlaneGeometry(40, 0.1);
-        const planeMaterial2 = new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.DoubleSide });
+        const planeGeometry2 = new THREE.PlaneGeometry(60, 0.1);
+        const planeMaterial2 = new THREE.MeshBasicMaterial({ color: 0x828181, side: THREE.DoubleSide });
 
         const roadSeparator1 = new THREE.Mesh(planeGeometry2, planeMaterial2);
         
@@ -87,9 +89,9 @@ class Main {
 
         // move the camera to a top view
         //this.camera.position.z = 5;
-        this.camera.position.y = 5;
+        this.camera.position.y = 3;
 
-        this.camera.position.x = -5;
+        this.camera.position.x = -7;
         this.camera.lookAt(0, 0, 0);
 
         // rotate the camera 90 degrees
@@ -99,25 +101,58 @@ class Main {
 
         controls.update();
 
-        // add lights
-        const ambientLight = new THREE.AmbientLight(0xffffff, 5);
-        this.scene.add(ambientLight);
+        // light up the scene
+        const light = new THREE.AmbientLight(0x404040, 30); // soft white light
+        this.scene.add(light);
 
-        const objLoader = new OBJLoader();
-        const mtlLoader = new MTLLoader();
+        const carLoaderObj = new OBJLoader(manager);
+        const carLoaderMtl = new MTLLoader(manager);
 
         // load the mtl file
-        mtlLoader.load("./src/models/kocsi_final.mtl", (materials) => {
+        carLoaderMtl.load("./src/models/kocsi_final.mtl", (materials) => {
             materials.preload();
 
             // load the obj file
-            objLoader.setMaterials(materials);
-            objLoader.load("./src/models/kocsi_final.obj", (object) => {
+            carLoaderObj.setMaterials(materials);
+            carLoaderObj.load("./src/models/kocsi_final.obj", (object) => {
                 object.position.y = .45;
                 // add the object to the scene
                 this.scene.add(object);
             });
         });
+
+        manager.onLoad = () => {
+            console.log("loaded");
+            document.getElementById("loadingScreen").style.display = "none";
+        };
+
+        const truckLoaderObj = new OBJLoader(manager);
+        const truckLoaderMtl = new MTLLoader(manager);
+
+        truckLoaderMtl.load("./src/models/truck_fin2.mtl", (materials) => {
+            materials.preload();
+
+            // load the obj file
+            truckLoaderObj.setMaterials(materials);
+            truckLoaderObj.load("./src/models/truck_fin2.obj", (object) => {
+                object.position.y = .28;
+                object.position.x = 5;
+                object.position.z = 5;
+
+                object.scale.set(1.5, 1.5, 1.5);
+
+                object.rotation.y = Math.PI / 2;
+
+                //object.position.x = 5;
+                // add the object to the scene
+                this.scene.add(object);
+            });
+        });
+
+        const fog = new THREE.Fog(0xffffff, 0, 55);
+        this.scene.fog = fog;
+
+
 
         this.animate();
     }
