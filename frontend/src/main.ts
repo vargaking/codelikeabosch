@@ -1,9 +1,8 @@
 // import Main class from ts/three.ts
 
-import { Main } from './ts/three';
-import { SceneObject } from './ts/objects';
+import { Main } from "./ts/three";
+import { SceneObject } from "./ts/objects";
 import * as THREE from "three";
-
 
 // create an object for the movement data
 
@@ -11,20 +10,32 @@ import * as THREE from "three";
 // level 2: object id
 // level 3: x, y, type
 
-
 const movementData = [
-  []
+    [
+        { id: 0, x: 0, y: 0, type: "main" },
+        { id: 1, x: 1, y: 1, type: "truck" },
+    ],
+    [
+        { id: 0, x: 0, y: 0, type: "main" },
+        { id: 1, x: 2, y: 2, type: "truck" },
+    ],
+    [
+        { id: 0, x: 0, y: 0, type: "main" },
+        { id: 1, x: 3, y: 3, type: "truck" },
+    ],
 ];
 
 let view = new Main();
 
 let clock = new THREE.Clock();
 
+let mainCar = new SceneObject(0, 0, 0, "main");
+console.log(mainCar.getMainObject(view.scene));
+//view.scene.add(mainCar.getMainObject(view.scene));
 
 
-/*
 // initialize the scene with the object at the first timestamp
-movementData[0].objects.forEach((object, index) => {
+/*movementData[0].forEach((object, index) => {
   let sceneObject = new SceneObject(object.id, object.x, object.y, object.type);
   view.objects.push(sceneObject);
 

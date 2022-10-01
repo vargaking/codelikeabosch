@@ -108,7 +108,7 @@ class Main {
         const carLoaderObj = new OBJLoader(manager);
         const carLoaderMtl = new MTLLoader(manager);
 
-        // load the mtl file
+        /* // load the mtl file
         carLoaderMtl.load("./src/models/kocsi_final.mtl", (materials) => {
             materials.preload();
 
@@ -147,7 +147,7 @@ class Main {
                 // add the object to the scene
                 this.scene.add(object);
             });
-        });
+        });*/
 
         const fog = new THREE.Fog(0xffffff, 0, 55);
         this.scene.fog = fog;
