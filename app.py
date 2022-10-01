@@ -1,6 +1,7 @@
 from flask import Flask, request
 import lib
 import pandas
+import json
 
 app = Flask(__name__)
 
@@ -30,6 +31,9 @@ def testing():
 
         counter = 0
         for index, row in df.iterrows():
+            if counter >= 10:
+                break
+            counter += 1
             value = []
             counter += 1
             if (counter == 200):

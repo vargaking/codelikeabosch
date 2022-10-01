@@ -7,7 +7,7 @@
 #include <random>
 
 #define INFINITE_ERROR 1000000
-#define MERGE_DISTANCE 1
+#define MERGE_DISTANCE 3
 
 enum class ObjectType
 {
