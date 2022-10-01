@@ -139,7 +139,10 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
             };
             std::string jfa = to_string(j2);
             outputstring += jfa;
-            outputstring += ",";
+            if(result[x].size()-1 != p) {
+                outputstring += ",";
+            }
+           
         }
         if (x != result.size() - 1)
         {

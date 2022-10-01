@@ -15,19 +15,10 @@ import * as THREE from "three";
 let movementData = [];
 
 await fetch("http://localhost:5000/testing")
-    .then((response) => console.log(response.body))
+    .then((response) => response.json())
     .then((data) => {
         console.log(data);
-        movementData = [
-          [
-            { x: 1, y: 5, id: 1, type: "car" },
-            { x: -1, y: -5, id: 2, type: "car" },
-          ],
-          [
-            { x: 4, y: 5, id: 1, type: "car" },
-            { x: 0, y: -5, id: 2, type: "car" },
-          ],
-        ];
+        movementData = data;
     });
 
 const managerr = new THREE.LoadingManager();
@@ -49,7 +40,7 @@ function run() {
   let index = 0;
   let element;
   let timmer = setInterval(() => {
-    if (index < 10) {
+    if (index < 1000000) {
       try {
       element = movementData[index];
 
@@ -66,7 +57,7 @@ function run() {
         if (!objectInScene) {
           // if the object is new, create a new object and add it to the scene
           
-          if (object.type === "car" && (object.x != 0 || object.y != 0)) {
+          if (object.type === "car") {
             let newObject = new SceneObject(
               object.id,
               object.x,
@@ -82,6 +73,35 @@ function run() {
             view.scene.add(currentObj);
             view.objects.push(newObject);
             console.log("new car", view.objects);
+          } else if (object.type === "truck") {
+            let newObject = new SceneObject(
+              object.id,
+              object.x,
+              object.y,
+              object.type
+            );
+
+            const currentObj = view.truckObj.clone();
+            currentObj.position.x = object.x;
+            currentObj.position.y = .28;
+            currentObj.position.z = object.y;
+            currentObj.name = object.id;
+            view.scene.add(currentObj);
+            view.objects.push(newObject);
+            console.log("new truck", view.objects);
+          } else if (object.type === "unknown") {
+            // create a red ball
+            let newObject = new THREE.SphereGeometry(0.5, 8, 4);
+            let newMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+            let currentObj = new THREE.Mesh(newObject, newMaterial);
+            
+            currentObj.position.x = object.x;
+            currentObj.position.y = .45;
+            currentObj.position.z = object.y;
+            currentObj.name = object.id;
+            view.scene.add(currentObj);
+            view.objects.push(newObject);
+            console.log("new unknown", view.objects);
           }
         } else {
           console.log("object already in scene");
@@ -110,8 +130,27 @@ function run() {
           console.log(view.objects);
 
         }
+
+        
         //console.log(object);
       });
+
+      // collect objects that are not in the current timestamp
+      let objectsToRemove = view.prevObjects.filter((prevObject) => {
+        let objectInCurrentTimestamp = timestamp.find((object) => {
+          return object.id === prevObject.id;
+        });
+
+        return !objectInCurrentTimestamp;
+      });
+
+      // remove the objects that are not in the current timestamp
+      objectsToRemove.forEach((object) => {
+        let objectInScene = view.scene.getObjectByName(object.id);
+        view.scene.remove(objectInScene);
+      });
+
+
       view.prevObjects = view.objects;
     } catch (error) {
       clearInterval(timmer);
@@ -119,7 +158,7 @@ function run() {
     }
     index++;
 
-  }, 1000);
+  }, 100);
 }
 
 
