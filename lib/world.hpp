@@ -8,6 +8,14 @@
 
 #define INFINITE_ERROR 1000000
 #define MERGE_DISTANCE 3
+#define TIMEOUT_TICKS 3000
+
+const double pi = 3.14159265358979;
+
+inline double to_radian (double degrees)
+{
+    return (pi * degrees) / 180;
+}
 
 enum class ObjectType
 {
@@ -53,6 +61,7 @@ class Object
         EstimateState estimate;
         PredictionState prediction;
         int id;
+        int timeout;
 
         Object (MeasuredState initial_state)
         {
@@ -69,6 +78,8 @@ class Object
             std::random_device dev;
             std::mt19937 rng(dev());
             id = rng();
+
+            timeout = 0;
         }
 
         void update ()
@@ -101,6 +112,8 @@ class Object
                 prediction.position[axis] = estimate.position[axis] + (estimate.velocity[axis] * dt) + (0.5 * estimate.acceleration[axis] * std::pow(dt, 2));
             }
         }
+
+
 };
 
 class HostMotionState 
@@ -187,12 +200,12 @@ class HostObject
             prediction.yaw_position = estimate.yaw_position + (estimate.yaw_rate * dt);
 
             double shift = (estimate.velocity * dt) + (0.5 * estimate.acceleration * std::pow(dt, 2));
-            prediction.x += shift * std::cos(estimate.yaw_position);
-            prediction.y += shift * std::sin(estimate.yaw_position);
-            prediction.vx = estimate.velocity * std::cos(estimate.yaw_position);
-            prediction.vy = estimate.velocity * std::sin(estimate.yaw_position);
-            prediction.ax = estimate.acceleration * std::cos(estimate.yaw_position);
-            prediction.ay = estimate.acceleration * std::sin(estimate.yaw_position);
+            prediction.x += shift * std::cos(to_radian(estimate.yaw_position));
+            prediction.y += shift * std::sin(to_radian(stimate.yaw_position));
+            prediction.vx = estimate.velocity * std::cos(to_radian(estimate.yaw_position));
+            prediction.vy = estimate.velocity * std::sin(to_radian(estimate.yaw_position));
+            prediction.ax = estimate.acceleration * std::cos(to_radian(estimate.yaw_position));
+            prediction.ay = estimate.acceleration * std::sin(to_radian(estimate.yaw_position));
         }
 };
 
@@ -315,14 +328,20 @@ class World
                 }
             }
 
-            for (int i = 0; i < objects.size(); i++) {
+            for (int i = objects.size() - 1; i >= 0; i--) {
                 if (!object_has_match[i]) {
                     for (auto &u : objects[i].measurement.error) {
                         u = INFINITE_ERROR;
                     }
+                    objects[i].timeout++;
+                } else {
+                    objects[i].timeout = 0;
                 }
-
-                objects[i].update();
+                if (objects[i].timeout > TIMEOUT_TICKS) {
+                    objects.erase(objects.begin() + i);
+                } else {
+                    objects[i].update();
+                }
             }
 
             for (int i = 0; i < sensor_data.size(); i++) {
@@ -330,7 +349,6 @@ class World
                     objects.push_back(Object(sensor_data[i]));
                 }
             }
-
         }
 
         void tick (const TickData &data)
@@ -361,10 +379,11 @@ class World
 
                 update_objects(data.object_states);
 
-
                 for (auto &object : objects) {
                     object.predict(0.01, process_noise);
                 }
+
+                
             }
 
             time = time + 0.01;
