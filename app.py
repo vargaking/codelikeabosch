@@ -1,6 +1,7 @@
 from flask import Flask, request
 import lib
 import pandas
+import json
 
 app = Flask(__name__)
 
@@ -26,7 +27,11 @@ def testing():
         for name in df.columns:
             keys.append(name)
 
+        counter = 0
         for index, row in df.iterrows():
+            if counter >= 10:
+                break
+            counter += 1
             value = []
             for key in keys:
                 value.append(row[key])
@@ -39,8 +44,13 @@ def testing():
     for tick in snapshots:
         objects = []
         for obj in tick:
-            objects.append(ObjectSnapshot(obj))
+            s = ObjectSnapshot(obj)
+            objects.append(s.__dict__)
         ticks.append(objects)
     
     return ticks
+
+
+
+
 

@@ -7,7 +7,7 @@
 #include <random>
 
 #define INFINITE_ERROR 1000000
-#define MERGE_DISTANCE 1
+#define MERGE_DISTANCE 3
 
 enum class ObjectType
 {
@@ -341,11 +341,11 @@ class World
                     host.update();
                 }
 
+                double process_noise[3] = {1, 1, 1};
+
                 host.predict(0.01, process_noise);
 
                 update_objects(data.object_states);
-
-                double process_noise[3] = {1, 1, 1};
 
 
                 for (auto &object : objects) {
