@@ -14,7 +14,7 @@ std::string test()
     return "Hello World!";
 }
 
-std::vector<std::vector<ObjectSnapshot>> testing(std::vector<std::vector<std::vector<float>>> values)
+std::string testing(std::vector<std::vector<std::vector<float>>> values)
 {
     std::vector<std::vector<ObjectSnapshot>> result;
     int last_frame = 0;
@@ -63,7 +63,11 @@ std::vector<std::vector<ObjectSnapshot>> testing(std::vector<std::vector<std::ve
                         state.type = ObjectType((int)values[3][i][o + 32]);
                         for (int p = 0; p < 3; p++)
                         {
-                            state.error[p] = INFINITE_ERROR;
+                            if (p == 2)
+                            {
+                                state.error[p] = INFINITE_ERROR;
+                            }
+                            state.error[p] = 0;
                         }
 
                         state.position[0] = values[3][i][o + 2] / 128.0;
@@ -116,10 +120,10 @@ std::vector<std::vector<ObjectSnapshot>> testing(std::vector<std::vector<std::ve
             result.push_back(w.export_objects());
             last_frame = 0;
         }
-        std::cout << w.host.prediction.position[0] << " " << w.host.prediction.position[1] << std::endl;
+        std::cout << w.time << " " << w.host.prediction.position[0] << " " << w.host.prediction.position[1] << std::endl;
     }
 
-    return result;
+    return "csa";
 }
 
 PYBIND11_MODULE(lib, handle)

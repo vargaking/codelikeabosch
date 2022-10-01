@@ -4,6 +4,7 @@ import pandas
 
 app = Flask(__name__)
 
+
 class ObjectSnapshot:
     def __init__(self, obj):
         self.x = obj.get_x()
@@ -11,6 +12,7 @@ class ObjectSnapshot:
         self.z = obj.get_z()
         self.type = obj.get_type()
         self.id = obj.get_id()
+
 
 @app.route('/testing')
 def testing():
@@ -26,8 +28,12 @@ def testing():
         for name in df.columns:
             keys.append(name)
 
+        counter = 0
         for index, row in df.iterrows():
             value = []
+            counter += 1
+            if (counter == 200):
+                break
             for key in keys:
                 value.append(row[key])
             longvalues.append(value)
@@ -39,8 +45,8 @@ def testing():
     for tick in snapshots:
         objects = []
         for obj in tick:
-            objects.append(ObjectSnapshot(obj))
+            s = ObjectSnapshot(obj)
+            objects.append(s.__dict__)
         ticks.append(objects)
-    
-    return ticks
 
+    return ticks
