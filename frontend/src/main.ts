@@ -15,7 +15,7 @@ import * as THREE from "three";
 let movementData = [];
 
 await fetch("http://localhost:5000/testing")
-    .then((response) => response.json())
+    .then((response) => console.log(response.body))
     .then((data) => {
         console.log(data);
         movementData = [

@@ -100,8 +100,8 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
                         state.velocity[0] = values[3][lastitem2][313 + t + y] / 256.0;
                         state.velocity[1] = values[3][lastitem2][354 + t + y] / 256.0;
                         state.velocity[2] = values[3][lastitem2][395 + t + y] / 256.0;
-                        if (state.position[0] != 0 || state.position[0] != 0)
-                        {
+
+                        if (state.position[0] != 0 || state.position[0] != 0) {
                             tick.object_states.push_back(state);
                         }
                     }
@@ -109,10 +109,7 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
                 lastitem2++;
             }
         }
-        if (tick.is_host_updated)
-        {
-            // std::cout << "Tick: " << tick.is_host_updated << std::endl;
-        }
+
 
         w.tick(tick);
         last_frame++;
@@ -121,8 +118,7 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
             result.push_back(w.export_objects());
             last_frame = 0;
         }
-        // std::cout << w.time << " " << w.host.prediction.x << " " << w.host.prediction.y << std::endl;
-        // std::cout << w.objects.size() << std::endl;
+
         std::cout << lastitem2 << " " << values[3].size() << "\n";
     }
 
