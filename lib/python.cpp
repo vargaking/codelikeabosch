@@ -41,10 +41,8 @@ std::vector<std::vector<ObjectSnapshot>> testing(std::vector<std::vector<std::ve
             if (timestamp == int(f * 100))
             {
                 tick.is_host_updated = true;
-                tick.host_state.velocity[0] = values[4][i][5] / 256.0;
-                tick.host_state.velocity[1] = values[4][i][6] / 256.0;
+                tick.host_state.velocity = values[4][i][5] / 256.0;
                 tick.host_state.acceleration[0] = values[4][i][1] / 2048.0;
-                tick.host_state.acceleration[1] = values[4][i][2] / 2048.0;
                 tick.host_state.yaw_rate = values[4][i][3] / 16384.0;
             }
         }
