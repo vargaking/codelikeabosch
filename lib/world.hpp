@@ -375,14 +375,16 @@ public:
             {
                 objects[i].timeout = 0;
             }
-            if (objects[i].timeout > TIMEOUT_TICKS)
-            {
-                objects.erase(objects.begin() + i);
-            }
-            else
-            {
-                objects[i].update();
-            }
+            objects[i].update();
+        }
+
+        while (true)
+        {
+            auto it = std::find_if(objects.begin(), objects.end(), [&](auto &i)
+                                   { return i.timeout > TIMEOUT_TICKS; });
+            if (it == objects.end())
+                break;
+            objects.erase(it);
         }
 
         for (int i = 0; i < sensor_data.size(); i++)
@@ -396,6 +398,8 @@ public:
 
     void tick(const TickData &data)
     {
+        time = time + 0.01;
+
         if (!host_ready)
         {
             if (data.is_host_updated)
@@ -435,8 +439,6 @@ public:
                 object.predict(0.01, process_noise);
             }
         }
-
-        time = time + 0.01;
     }
 
     std::vector<ObjectSnapshot> export_objects()
