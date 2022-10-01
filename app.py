@@ -40,14 +40,5 @@ def testing():
         fileValues.append(longvalues)
 
     snapshots = lib.testing(fileValues)
-    ticks = []
-    for tick in snapshots:
-        objects = []
-        for obj in tick:
-            s = ObjectSnapshot(obj)
-            objects.append(s.__dict__)
-        ticks.append(objects)
-
-
-
+    
     return snapshots
