@@ -8,7 +8,7 @@
 
 #define INFINITE_ERROR 1000000
 #define MERGE_DISTANCE 3
-#define TIMEOUT_TICKS 3000
+#define TIMEOUT_TICKS 500
 
 const double pi = 3.14159265358979;
 
@@ -201,7 +201,7 @@ class HostObject
 
             double shift = (estimate.velocity * dt) + (0.5 * estimate.acceleration * std::pow(dt, 2));
             prediction.x += shift * std::cos(to_radian(estimate.yaw_position));
-            prediction.y += shift * std::sin(to_radian(stimate.yaw_position));
+            prediction.y += shift * std::sin(to_radian(estimate.yaw_position));
             prediction.vx = estimate.velocity * std::cos(to_radian(estimate.yaw_position));
             prediction.vy = estimate.velocity * std::sin(to_radian(estimate.yaw_position));
             prediction.ax = estimate.acceleration * std::cos(to_radian(estimate.yaw_position));
@@ -337,11 +337,13 @@ class World
                 } else {
                     objects[i].timeout = 0;
                 }
-                if (objects[i].timeout > TIMEOUT_TICKS) {
-                    objects.erase(objects.begin() + i);
-                } else {
-                    objects[i].update();
-                }
+                objects[i].update();
+            }
+
+            while (true) {
+                auto it = std::find_if(objects.begin(), objects.end(), [&] (auto &i) { return i.timeout > TIMEOUT_TICKS; });
+                if (it == objects.end()) break;
+                objects.erase(it);
             }
 
             for (int i = 0; i < sensor_data.size(); i++) {
@@ -353,6 +355,8 @@ class World
 
         void tick (const TickData &data)
         {
+            time = time + 0.01;
+
             if (!host_ready) {
                 if (data.is_host_updated) {
                     host = HostObject(data.host_state);
@@ -385,8 +389,6 @@ class World
 
                 
             }
-
-            time = time + 0.01;
         }
 
         std::vector<ObjectSnapshot> export_objects ()
