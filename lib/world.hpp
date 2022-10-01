@@ -106,7 +106,7 @@ class Object
 class HostMotionState 
 {
     public:
-        double velocity[2], acceleration[2], yaw_rate;
+        double velocity, acceleration, yaw_rate;
 };
 
 class HostMeasuredState : public HostMotionState
@@ -144,9 +144,10 @@ class HostObject
 
             for (int axis = 0; axis < 2; axis++) {
                 estimate.position[axis] = 0;
-                estimate.velocity[axis] = initial_state.velocity[axis];
-                estimate.acceleration[axis] = initial_state.acceleration[axis];
             }
+
+            estimate.velocity = initial_state.velocity;
+            estimate.acceleration = initial_state.acceleration;
 
             estimate.yaw_position = 0;
             estimate.yaw_rate = initial_state.yaw_rate;
@@ -159,10 +160,12 @@ class HostObject
                 estimate.error[i] = (1 - estimate.gain[i]) * prediction.error[i];
             }
 
+            estimate.velocity[axis] = prediction.velocity[axis] + estimate.gain[0] * (measurement.velocity[axis] - prediction.velocity[axis]);
+            estimate.acceleration[axis] = prediction.acceleration[axis] + estimate.gain[1] * (measurement.acceleration[axis] - prediction.acceleration[axis]);
+
+
             for (int axis = 0; axis < 2; axis++) {
                 estimate.position[axis] = prediction.position[axis];
-                estimate.velocity[axis] = prediction.velocity[axis] + estimate.gain[0] * (measurement.velocity[axis] - prediction.velocity[axis]);
-                estimate.acceleration[axis] = prediction.acceleration[axis] + estimate.gain[1] * (measurement.acceleration[axis] - prediction.acceleration[axis]);
             }
 
             estimate.yaw_position = prediction.yaw_position;
@@ -175,14 +178,14 @@ class HostObject
                 prediction.error[i] = estimate.error[i] + process_noise[i];
             }
 
-            for (int axis = 0; axis < 2; axis++) {
-                prediction.acceleration[axis] = estimate.acceleration[axis];
-                prediction.velocity[axis] = estimate.velocity[axis] + (estimate.acceleration[axis] * dt);
-                prediction.position[axis] = estimate.position[axis] + (estimate.velocity[axis] * dt) + (0.5 * estimate.acceleration[axis] * std::pow(dt, 2));
-            }
-
+            prediction.acceleration = estimate.acceleration;
+            prediction.velocity = estimate.velocity + (estimate.acceleration * dt);
             prediction.yaw_rate = estimate.yaw_rate;
             prediction.yaw_position = estimate.yaw_position + (estimate.yaw_rate * dt);
+
+            double shift = (estimate.velocity[axis] * dt) + (0.5 * estimate.acceleration[axis] * std::pow(dt, 2));
+            prediction.position[0] += shift * std::cos(estimate.yaw_position);
+            prediction.position[1] += shift * std::sin(estimate.yaw_position);
         }
 };
 
