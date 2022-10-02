@@ -1,3 +1,5 @@
+// see README.md
+
 #pragma once
 
 #include <iostream>
@@ -10,15 +12,9 @@
 #include "collision.hpp"
 
 #define INFINITE_ERROR 1000000
-<<<<<<< Updated upstream
-#define DATA_MERGE_DISTANCE 3
-#define OBJECT_MERGE_DISTANCE 3
-#define TIMEOUT_TICKS 1000
-=======
 #define DATA_MERGE_DISTANCE 2
 #define OBJECT_MERGE_DISTANCE 2
-#define TIMEOUT_TICKS 500
->>>>>>> Stashed changes
+#define TIMEOUT_TICKS 1000
 
 class MotionState
 {

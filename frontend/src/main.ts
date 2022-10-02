@@ -18,7 +18,11 @@ function abs(x) {
     return x < 0 ? -x : x;
 }
 
-await fetch("http://localhost:5000/testing")
+// prompt user for path
+
+let path = prompt("Enter path to data file");
+
+await fetch("http://localhost:5000/view_ft/" + path)
     .then((response) => response.json())
     .then((data) => {
         console.log(data);

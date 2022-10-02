@@ -1,3 +1,5 @@
+// see README.md
+
 #pragma once
 
 #include <vector>

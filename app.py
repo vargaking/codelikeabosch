@@ -1,3 +1,5 @@
+# see README.md
+
 from flask import Flask, request
 from flask_cors import CORS
 import lib
@@ -9,7 +11,7 @@ CORS(app)
 
 @app.route('/')
 def root():
-    return "The recordings should be placed into folder 'csvfiles'."
+    return "see README.md"
 
 @app.route('/view/<path:data>')
 def testing(data):
@@ -38,4 +40,17 @@ def testing(data):
     # c++ backend
     snapshots = lib.testing(fileValues)
 
+    # save the snapshots file to 'data'.json
+    with open(f'csvfiles/{data}/data.json', 'w') as outfile:
+        json.dump(snapshots, outfile)
+
+    print("done")
+
     return snapshots
+
+@app.route('/view_ft/<path:data>')
+def view_ft(data):
+    # open the json file
+    with open(f'csvfiles/{data}/data.json') as json_file:
+        data = json.load(json_file)
+        return data
