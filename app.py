@@ -9,17 +9,17 @@ CORS(app)
 
 @app.route('/')
 def root():
+    return "The recordings should be placed into folder 'csvfiles'."
 
-
-@app.route('/testing')
-def testing():
+@app.route('/view/<path:data>')
+def testing(data):
 
     fileNames = ["Group_340", "Group_342",
                  "Group_343", "Group_349", "Group_416"]
 
     fileValues = []
     for fileName in fileNames:
-        df = pandas.read_csv(f'csvfiles/test1/{fileName}.csv')
+        df = pandas.read_csv(f'csvfiles/{data}/{fileName}.csv')
         keys = []
         longvalues = []
 

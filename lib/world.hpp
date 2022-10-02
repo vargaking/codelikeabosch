@@ -12,7 +12,7 @@
 #define INFINITE_ERROR 1000000
 #define DATA_MERGE_DISTANCE 3
 #define OBJECT_MERGE_DISTANCE 3
-#define TIMEOUT_TICKS 500
+#define TIMEOUT_TICKS 1000
 
 class MotionState
 {
@@ -381,7 +381,7 @@ class World
 
             for (int i = 0; i < objects.size(); i++) {
                 for (int j = 0; j < sensor_data.size(); j++) {
-                    if (object_has_match[i] || data_has_match[j]) {
+                    if (data_has_match[j]) {
                         continue;
                     }
 
@@ -398,9 +398,11 @@ class World
                     for (auto &u : objects[i].measurement.error) {
                         u = INFINITE_ERROR;
                     }
+                    // incrementally increasing
                     objects[i].timeout++;
                 } else {
-                    objects[i].timeout = 0;
+                    // steeply decreasing
+                    objects[i].timeout -= 10;
                 }
                 objects[i].update();
             }
