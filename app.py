@@ -1,3 +1,4 @@
+from tracemalloc import Snapshot
 from flask import Flask, request
 from flask_cors import CORS
 import lib
@@ -7,19 +8,16 @@ import json
 app = Flask(__name__)
 CORS(app)
 
-@app.route('/')
-def root():
-    return "The recordings should be placed into folder 'csvfiles'."
-
-@app.route('/view/<path:data>')
-def testing(data):
-
+@app.route('/testing')
+def testing():
+    print("asd")
+    
     fileNames = ["Group_340", "Group_342",
                  "Group_343", "Group_349", "Group_416"]
 
     fileValues = []
     for fileName in fileNames:
-        df = pandas.read_csv(f'csvfiles/{data}/{fileName}.csv')
+        df = pandas.read_csv(f'csvfiles/test1/{fileName}.csv')
         keys = []
         longvalues = []
 
@@ -34,8 +32,20 @@ def testing(data):
 
         fileValues.append(longvalues)
 
-    # simulating ticks and retrieving snapshots every 0.1 sec
-    # c++ backend
     snapshots = lib.testing(fileValues)
+    
+    
+    """# load ft_test.json into snapshots variable
+    with open('ft_test.json') as f:
+        snapshots = json.load(f)"""
+
+    return snapshots
+
+
+@app.route('/testing2')
+def testing2():
+    # load ft_test.json into snapshots variable
+    with open('ft_test.json') as f:
+        snapshots = json.load(f)
 
     return snapshots

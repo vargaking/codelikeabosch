@@ -13,8 +13,9 @@ class SceneObject {
 
     
 
-    constructor(public id: number, public x: number, public y: number, public type: string, public deltaX: number = 0, public deltaY: number = 0) {
+    constructor(public id: number, public angle:number, public x: number, public y: number, public type: string, public deltaX: number = 0, public deltaY: number = 0) {
         this.id = id;
+        this.angle = angle;
         this.x = x;
         this.y = y;
         this.type = type;
@@ -39,11 +40,11 @@ class SceneObject {
         return plane;
     }
 
-    getMainObject(scene) {
+    getMainObject(scene, managerr) {
         const manager = new THREE.LoadingManager();
 
-        const carLoaderObj = new OBJLoader(manager);
-        const carLoaderMtl = new MTLLoader(manager);
+        const carLoaderObj = new OBJLoader(managerr);
+        const carLoaderMtl = new MTLLoader(managerr);
 
 
         manager.onLoad = () => {
@@ -52,13 +53,14 @@ class SceneObject {
         };
 
         // load the mtl file
-        carLoaderMtl.load("./src/models/kocsi_final.mtl", (materials) => {
+        carLoaderMtl.load("./src/models/piroskocsi.mtl", (materials) => {
             materials.preload();
 
             // load the obj file
             carLoaderObj.setMaterials(materials);
-            carLoaderObj.load("./src/models/kocsi_final.obj", (object) => {
+            carLoaderObj.load("./src/models/piroskocsi.obj", (object) => {
                 object.position.y = .45;
+                object.name = "mainCar";
                 console.log(object);
                 // add the object to the scene
                 scene.add(object);

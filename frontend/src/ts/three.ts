@@ -16,12 +16,23 @@ class Main {
     public prevObjects: SceneObject[] = [];
     public renderObjects: THREE.Mesh[] = [];
 
-    public mainCarObj: THREE.Mesh;
+    public mainCarObj: any;
     public carObj: THREE.Mesh;
     public truckObj: THREE.Mesh;
+    public pedestrianObj: THREE.Mesh;
+    public bikeObj: THREE.Mesh;
+
+    road1: THREE.Mesh;
+    road2: THREE.Mesh;
+    road3: THREE.Mesh;
+
+    roadSeparator1: THREE.Mesh;
+    roadSeparator2: THREE.Mesh;
 
     clock: THREE.Clock;
     delta: number;
+
+    animationID: number;
 
     constructor(public manager: any) {
         this.scene = new THREE.Scene();
@@ -45,29 +56,29 @@ class Main {
         const planeGeometry = new THREE.PlaneGeometry(150, 5);
         const planeMaterial = new THREE.MeshBasicMaterial({ color: 0xd1d1d1, side: THREE.DoubleSide });
         
-        const road1 = new THREE.Mesh(planeGeometry, planeMaterial);
+        this.road1 = new THREE.Mesh(planeGeometry, planeMaterial);
 
-        road1.rotation.x = Math.PI / 2;
-        road1.position.x = 13;
+        this.road1.rotation.x = Math.PI / 2;
+        this.road1.position.x = 13;
 
-        this.scene.add(road1);
+        this.scene.add(this.road1);
 
-        const road2 = new THREE.Mesh(planeGeometry, planeMaterial);
+        this.road2 = new THREE.Mesh(planeGeometry, planeMaterial);
 
-        road2.rotation.x = Math.PI / 2;
-        road2.position.z = 5;
-        road2.position.x = 13;
+        this.road2.rotation.x = Math.PI / 2;
+        this.road2.position.z = 5;
+        this.road2.position.x = 13;
 
-        this.scene.add(road2);
+        this.scene.add(this.road2);
 
-        const road3 = new THREE.Mesh(planeGeometry, planeMaterial);
+        this.road3 = new THREE.Mesh(planeGeometry, planeMaterial);
 
-        road3.rotation.x = Math.PI / 2;
-        road3.position.z = -5;
-        road3.position.x = 13;
+        this.road3.rotation.x = Math.PI / 2;
+        this.road3.position.z = -5;
+        this.road3.position.x = 13;
 
     
-        this.scene.add(road3);
+        this.scene.add(this.road3);
 
         // add a plane that separates the road
         const planeGeometry2 = new THREE.PlaneGeometry(150, 0.1);
@@ -122,6 +133,18 @@ class Main {
         const mainCarLoaderMtl = new MTLLoader(this.manager);
 
         console.log("loading car");
+
+        const mainCarManager = new THREE.LoadingManager();
+        mainCarManager.onLoad = () => {
+            console.log("loaded");
+            document.getElementById("loadingScreen").style.display = "none";
+            this.animate();
+        };
+
+        this.mainCarObj = new SceneObject(0, 0, 0, 0, "host");
+        this.mainCarObj.getMainObject(this.scene, mainCarManager);
+
+        console.log(this.mainCarObj);
         
         // load the mtl file
         let loadObject = (url) => new Promise ((resolve, reject) => {
@@ -145,11 +168,73 @@ class Main {
             console.log(object);
         });
 
-        loadObject("./src/models/truck_fin2.mtl").then((object) => { 
-            
-            this.truckObj = object; 
+        let loadTruck = (url) => new Promise ((resolve, reject) => {
+            const mtlLoader = new MTLLoader();
+            mtlLoader.load(url, (materials) => {
+                materials.preload();
+                console.log("loaded mtl");
+                const objLoader = new OBJLoader(this.manager);
+                objLoader.setMaterials(materials);
+                objLoader.load(url.replace(".mtl", ".obj"), (object) => {
+                    console.log("loaded obj");
+                    resolve(object);
+                });
+            });
+        });
+
+        loadTruck("./src/models/truck_final_final2.mtl").then((object) => {
+            object.scale.set(1.5, 1.5, 1.5);
+            object.rotation.y = Math.PI;
+            this.truckObj = object;
             console.log(object);
         });
+
+        let loadBike = (url) => new Promise ((resolve, reject) => {
+            const mtlLoader = new MTLLoader();
+            mtlLoader.load(url, (materials) => {
+                materials.preload();
+                console.log("loaded mtl");
+                const objLoader = new OBJLoader(this.manager);
+                objLoader.setMaterials(materials);
+                objLoader.load(url.replace(".mtl", ".obj"), (object) => {
+                    console.log("loaded obj");
+                    resolve(object);
+                });
+            });
+        });
+
+        loadBike("./src/models/motor.mtl").then((object) => {
+            object.scale.set(0.3, 0.3, 0.3);
+            this.bikeObj = object;
+            console.log(object);
+        });
+
+        let loadPedestrian = (url) => new Promise ((resolve, reject) => {
+            const mtlLoader = new MTLLoader();
+            mtlLoader.load(url, (materials) => {
+                materials.preload();
+                console.log("loaded mtl");
+                const objLoader = new OBJLoader(this.manager);
+                objLoader.setMaterials(materials);
+                objLoader.load(url.replace(".mtl", ".obj"), (object) => {
+                    console.log("loaded obj");
+                    resolve(object);
+                });
+            });
+        });
+
+        loadPedestrian("./src/models/lego_minifigure.mtl").then((object) => {
+            this.pedestrianObj = object;
+            object.scale.set(0.2, 0.2, 0.2);
+            object.rotation.y = Math.PI / 2;
+            console.log(object);
+        });
+
+        
+
+
+
+        
 
 
         /*mainCarLoaderMtl.load("./src/models/kocsi_final.mtl", (materials) => {
@@ -214,12 +299,12 @@ class Main {
             });
         });*/
 
-        const fog = new THREE.Fog(0xffffff, 0, 70);
+        const fog = new THREE.Fog(0xffffff, 0, 100);
         this.scene.fog = fog;
 
 
 
-        this.animate();
+        //this.animate();
     }
 
     getCarObj() {
@@ -282,12 +367,15 @@ class Main {
     }
 
     animate() {
-        requestAnimationFrame(this.animate.bind(this));
+        this.animationID = requestAnimationFrame(this.animate.bind(this));
 
         this.delta = this.clock.getDelta();
 
 
         //console.log(this.objects, "objects", this.objects.length);
+
+        //console.log(this.mainCarObj, "carObj");
+
 
         // iter through the objects and update their position
         this.objects.forEach((object) => {
@@ -299,6 +387,8 @@ class Main {
 
             let objectInScene = this.scene.getObjectByName(object.id);
             
+            //console.log(objectInScene, "fuck")
+
             objectInScene.position.x += moveX;
             objectInScene.position.z += moveY;
 
