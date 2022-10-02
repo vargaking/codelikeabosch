@@ -41,7 +41,7 @@ function run() {
     let index = 0;
     let element;
     let timmer = setInterval(() => {
-        if (index < 3000) {
+        if (index < movementData.length) {
             console.log(index, "anyadat index");
             try {
                 element = movementData[index];
