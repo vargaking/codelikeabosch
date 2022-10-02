@@ -18,7 +18,7 @@ function abs(x) {
     return x < 0 ? -x : x;
 }
 
-await fetch("http://localhost:5000/testing2")
+await fetch("http://localhost:5000/testing")
     .then((response) => response.json())
     .then((data) => {
         console.log(data);
