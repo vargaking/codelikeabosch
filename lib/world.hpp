@@ -11,7 +11,7 @@
 
 #define INFINITE_ERROR 1000000
 #define DATA_MERGE_DISTANCE 3
-#define OBJECT_MERGE_DISTANCE 1
+#define OBJECT_MERGE_DISTANCE 3
 #define TIMEOUT_TICKS 500
 
 class MotionState
@@ -303,7 +303,7 @@ class ObjectSnapshot {
                 }
             }
             x = object.estimate.position[0] - host.estimate.x;
-            y = - object.estimate.position[1] - host.estimate.y;
+            y = - object.estimate.position[1] + host.estimate.y;
             angle = - object.estimate.angle;
 
             id = object.id;

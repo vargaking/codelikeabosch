@@ -7,9 +7,13 @@ import json
 app = Flask(__name__)
 CORS(app)
 
+@app.route('/')
+def root():
+
+
 @app.route('/testing')
 def testing():
-    print("asd")
+
     fileNames = ["Group_340", "Group_342",
                  "Group_343", "Group_349", "Group_416"]
 
@@ -30,6 +34,8 @@ def testing():
 
         fileValues.append(longvalues)
 
+    # simulating ticks and retrieving snapshots every 0.1 sec
+    # c++ backend
     snapshots = lib.testing(fileValues)
 
     return snapshots
