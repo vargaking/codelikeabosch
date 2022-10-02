@@ -302,8 +302,8 @@ class ObjectSnapshot {
                     type = "unknown";
                 }
             }
-            x = object.estimate.position[0];
-            y = - object.estimate.position[1];
+            x = object.estimate.position[0] - host.estimate.x;
+            y = - object.estimate.position[1] - host.estimate.y;
             angle = - object.estimate.angle;
 
             id = object.id;
@@ -331,6 +331,7 @@ double distance (Object &p, Object &q)
     double dx = std::abs(p.prediction.position[0] - q.prediction.position[0]);
     double dy = std::abs(p.prediction.position[1] - q.prediction.position[1]);
     double distance = std::sqrt(std::pow(dx, 2) + std::pow(dy, 2));
+    //std::cout << dx << " " << dy << " " << distance << "\n";
     return distance;
 }
 
@@ -408,10 +409,10 @@ class World
                 auto it = std::find_if(objects.begin(), objects.end(), [&] (auto &i) { return i.timeout > TIMEOUT_TICKS; });
                 if (it == objects.end()) break;
                 objects.erase(it);
-                std::cout << "deleting\n";
+                //std::cout << "deleting\n";
             }
 
-            std::cout << objects.size() << "\n";
+            //std::cout << objects.size() << "\n";
 
             for (int i = 0; i < sensor_data.size(); i++) {
                 if (!data_has_match[i]) {
@@ -426,7 +427,8 @@ class World
                 bool found = false;
                 int index;
                 for (int i = 0; i < objects.size(); i++) {
-                    for (int j = i; j < objects.size(); j++) {
+                    for (int j = i + 1; j < objects.size(); j++) {
+                        //std::cout << "dist: " << distance(objects[i], objects[j]) << "\n";
                         if (distance(objects[i], objects[j]) < OBJECT_MERGE_DISTANCE) {
                             index = j;
                             found = true;
@@ -458,11 +460,11 @@ class World
                     host.predict(0.01, process_noise);
                 }
             } else {
-                std::cout << objects.size() << "\n";
+                //std::cout << objects.size() << "\n";
 
-                //merge_objects();
+                merge_objects();
 
-                std::cout << objects.size() << "\n";
+                //std::cout << objects.size() << "\n";
 
                 if (data.is_host_updated) {
                     host.measurement = data.host_state;
@@ -515,7 +517,7 @@ class World
         std::vector<ObjectSnapshot> export_objects ()
         {
             std::vector<ObjectSnapshot> result;
-            if (host_ready) result.push_back(ObjectSnapshot(host));
+            //if (host_ready) result.push_back(ObjectSnapshot(host));
             for (auto &object : objects) {
                 result.push_back(ObjectSnapshot(host, object));
             }
