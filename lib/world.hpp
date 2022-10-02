@@ -7,28 +7,12 @@
 #include <random>
 #include <algorithm>
 
+#include "collision.hpp"
+
 #define INFINITE_ERROR 1000000
-#define DATA_MERGE_DISTANCE 2
+#define DATA_MERGE_DISTANCE 3
 #define OBJECT_MERGE_DISTANCE 1
 #define TIMEOUT_TICKS 500
-
-const double pi = 3.14159265358979;
-
-inline double to_radian (double &degrees)
-{
-    return (pi * degrees) / 180;
-}
-
-enum class ObjectType
-{
-    unknown = 0,
-    truck = 1,
-    car = 2,
-    motorbike = 3,
-    bicycle = 4,
-    pedestrian = 5,
-    car_or_truck = 6
-};
 
 class MotionState
 {
@@ -46,13 +30,13 @@ class MeasuredState : public MotionState
 class EstimateState : public MotionState
 {
     public:
-        double gain[3], error[3];
+        double gain[3], error[3], angle;
 };
 
 class PredictionState : public MotionState
 {
     public:
-        double error[3];
+        double error[3], angle;
 };
 
 class Object
@@ -81,6 +65,8 @@ class Object
             std::mt19937 rng(dev());
             id = rng();
 
+            estimate.angle = 0;
+
             timeout = 0;
         }
 
@@ -100,6 +86,8 @@ class Object
                 estimate.velocity[axis] = prediction.velocity[axis] + estimate.gain[1] * (measurement.velocity[axis] - prediction.velocity[axis]);
                 estimate.acceleration[axis] = prediction.acceleration[axis] + estimate.gain[2] * (measurement.acceleration[axis] - prediction.acceleration[axis]);
             }
+
+            estimate.angle = prediction.angle;
         }
 
         void predict (double dt, double process_noise[3])
@@ -113,9 +101,64 @@ class Object
                 prediction.velocity[axis] = estimate.velocity[axis] + (estimate.acceleration[axis] * dt);
                 prediction.position[axis] = estimate.position[axis] + (estimate.velocity[axis] * dt) + (0.5 * estimate.acceleration[axis] * std::pow(dt, 2));
             }
+
+            double angle_target = std::atan(estimate.velocity[1] / estimate.velocity[0]);
+            double abs_velocity = std::sqrt(std::pow(estimate.velocity[0], 2) + std::pow(estimate.velocity[1], 2));
+
+            prediction.angle = estimate.angle + std::min(abs_velocity / 2, 1.0) * (angle_target - estimate.angle);
         }
 
+        Hitbox get_hitbox ()
+        {
+            double front, back, side;
 
+            switch (type) {
+                case ObjectType::car: {
+                    front = 3.9;
+                    back = 0.9;
+                    side = 1;
+                    break;
+                }
+                case ObjectType::truck: {
+                    front = 8.5;
+                    back = 3;
+                    side = 1.25;
+                    break;
+                }
+                case ObjectType::bicycle: {
+                    front = 1.3;
+                    back = 0.8;
+                    side = 0.5;
+                    break;
+                }
+                case ObjectType::car_or_truck: {
+                    front = 6;
+                    back = 2;
+                    side = 1.2;
+                    break;
+                }
+                case ObjectType::pedestrian: {
+                    front = 0.15;
+                    back = 0.15;
+                    side = 0.4;
+                    break;
+                }
+                case ObjectType::motorbike: {
+                    front = 1.4;
+                    back = 0.9;
+                    side = 0.55;
+                    break;
+                }
+                default: {
+                    front = 3.9;
+                    back = 0.9;
+                    side = 1;
+                    break;
+                }
+            }
+
+            return Hitbox(estimate.position[0], estimate.position[1], estimate.angle, front, back, side);
+        }
 };
 
 class HostMotionState 
@@ -261,12 +304,7 @@ class ObjectSnapshot {
             }
             x = object.estimate.position[0];
             y = - object.estimate.position[1];
-
-            if (object.estimate.velocity[1] + object.estimate.velocity[0] > 1) {
-                angle = - (std::atan(object.estimate.velocity[1] / object.estimate.velocity[0]));
-            } else {
-                angle = 0;
-            }
+            angle = - object.estimate.angle;
 
             id = object.id;
         }
@@ -311,17 +349,19 @@ class World
         bool host_ready;
         std::vector<Object> objects;
         double time;
+        bool warning;
 
     public:
         World ()
         {
             time = 0;
             host_ready = false;
+            warning = false;
         }
 
         void update_objects (std::vector<MeasuredState> &sensor_data)
         {
-            std::cout << "sensor_data.size(): " << sensor_data.size() << "\n";
+            //std::cout << "sensor_data.size(): " << sensor_data.size() << "\n";
             if (!host_ready) return;
 
             for (auto &data : sensor_data) {
@@ -368,7 +408,10 @@ class World
                 auto it = std::find_if(objects.begin(), objects.end(), [&] (auto &i) { return i.timeout > TIMEOUT_TICKS; });
                 if (it == objects.end()) break;
                 objects.erase(it);
+                std::cout << "deleting\n";
             }
+
+            std::cout << objects.size() << "\n";
 
             for (int i = 0; i < sensor_data.size(); i++) {
                 if (!data_has_match[i]) {
@@ -387,7 +430,10 @@ class World
                         if (distance(objects[i], objects[j]) < OBJECT_MERGE_DISTANCE) {
                             index = j;
                             found = true;
-                            break;
+                            if (objects[i].type == ObjectType::unknown) {
+                                objects[i].type = objects[j].type;
+                            };
+                            goto break_;
                         }
                     }
                 }
@@ -412,7 +458,11 @@ class World
                     host.predict(0.01, process_noise);
                 }
             } else {
-                merge_objects();
+                std::cout << objects.size() << "\n";
+
+                //merge_objects();
+
+                std::cout << objects.size() << "\n";
 
                 if (data.is_host_updated) {
                     host.measurement = data.host_state;
@@ -426,6 +476,8 @@ class World
                     host.update();
                 }
 
+                std::cout << objects.size() << "\n";
+
                 double process_noise[3] = {1, 1, 1};
 
                 host.predict(0.01, process_noise);
@@ -436,8 +488,28 @@ class World
                     object.predict(0.01, process_noise);
                 }
 
-                
+                warning = check_host_sides();
+                //std::cout << warning << "\n";
             }
+        }
+
+        bool check_host_sides ()
+        {
+            double angle = to_radian(host.estimate.yaw_position);
+            double sin = std::sin(angle);
+            double cos = std::cos(angle);
+
+            auto left = Hitbox(host.estimate.x + cos * 0.85 - sin * 1.55, host.estimate.y - sin * 0.85 - cos * 1.55, host.estimate.yaw_position, 1.15, 1.15, 0.75);
+            auto right = Hitbox(host.estimate.x + cos * 0.85 + sin * 1.55, host.estimate.y - sin * 0.85 + cos * 1.55, host.estimate.yaw_position, 1.15, 1.15, 0.75);
+
+            bool collision = false;
+            for (auto &object : objects) {
+                Hitbox h = object.get_hitbox();
+                collision |= h.check_collision(left);
+                collision |= h.check_collision(right);
+            }
+            
+            return collision;
         }
 
         std::vector<ObjectSnapshot> export_objects ()

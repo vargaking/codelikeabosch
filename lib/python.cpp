@@ -24,7 +24,7 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
 
     World w;
 
-    for (int f = first; f <= 3000; f += first)
+    for (int f = first; f <= b; f += first)
     {
         TickData tick;
         tick.is_host_updated = false;
@@ -119,8 +119,9 @@ std::string testing(std::vector<std::vector<std::vector<float>>> values)
             last_frame = 0;
         }
 
-        std::cout << lastitem2 << " " << values[3].size() << "\n";
-        std::cout << "obj count: " << w.objects.size() << "\n";
+        std::cout << w.objects.size() << ", new: " << tick.object_states.size() << "\n";
+
+        //std::cout << lastitem2 << " " << values[3].size() << "\n";
     }
 
     std::string outputstring = "[";
